@@ -41,4 +41,9 @@ export interface StoreFilters {
   plan: string;
   country: string;
   dateRange: string;
+  tags: string[];
+  minRevenue: string;
+  maxRevenue: string;
+  minRecoveryRate: string;
+  maxRecoveryRate: string;
 }

@@ -4,10 +4,16 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { TabAuthProvider } from "@/contexts/TabAuthContext";
+import { SimpleAuthProvider } from "@/contexts/SimpleAuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import PortalLayout from "@/components/PortalLayout";
 import LoginPage from "@/pages/LoginPage";
+import EnhancedLoginPage from "@/pages/EnhancedLoginPage";
+import SimpleLoginPage from "@/pages/SimpleLoginPage";
+import TestLoginPage from "@/pages/TestLoginPage";
+import WorkingLoginPage from "@/pages/WorkingLoginPage";
 import Marketplace from "@/pages/rep/Marketplace";
 import ActiveRecoveries from "@/pages/rep/ActiveRecoveries";
 import Earnings from "@/pages/rep/Earnings";
@@ -16,6 +22,7 @@ import Analytics from "@/pages/admin/Analytics";
 import RepManagement from "@/pages/admin/RepManagement";
 import AdminCommissions from "@/pages/admin/AdminCommissions";
 import StoreManagement from "@/pages/admin/StoreManagement";
+import EnhancedStoreManagement from "@/components/EnhancedStoreManagement";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,9 +34,10 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <AuthProvider>
+          <SimpleAuthProvider>
             <Routes>
-              <Route path="/auth/login" element={<LoginPage />} />
+              <Route path="/" element={<Navigate to="/auth/login" replace />} />
+              <Route path="/auth/login" element={<WorkingLoginPage />} />
               {/* Sales Rep Portal */}
               <Route element={<ProtectedRoute role="SALES_REP" />}>
                 <Route element={<PortalLayout />}>
@@ -46,13 +54,13 @@ const App = () => (
                   <Route path="/portal/admin/analytics" element={<Analytics />} />
                   <Route path="/portal/admin/reps" element={<RepManagement />} />
                   <Route path="/portal/admin/commissions" element={<AdminCommissions />} />
-                  <Route path="/portal/admin/stores" element={<StoreManagement />} />
+                  <Route path="/portal/admin/stores" element={<EnhancedStoreManagement />} />
                 </Route>
               </Route>
 
               <Route path="*" element={<NotFound />} />
             </Routes>
-          </AuthProvider>
+          </SimpleAuthProvider>
         </BrowserRouter>
       </TooltipProvider>
     </ThemeProvider>
