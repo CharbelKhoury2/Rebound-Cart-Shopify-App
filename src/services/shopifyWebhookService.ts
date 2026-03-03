@@ -81,7 +81,7 @@ export class ShopifyWebhookService {
   connect() {
     try {
       // Connect to your Shopify app's WebSocket endpoint
-      this.ws = new WebSocket(`${import.meta.env.VITE_WS_URL}/webhooks`);
+      this.ws = new WebSocket(`${import.meta.env.VITE_WS_URL}`);
       
       this.ws.onopen = () => {
         console.log('🔗 Connected to Shopify webhook stream');
@@ -100,9 +100,11 @@ export class ShopifyWebhookService {
 
       this.ws.onerror = (error) => {
         console.error('❌ WebSocket error:', error);
+        console.log('🔌 Make sure your Shopify app has WebSocket server running');
       };
     } catch (error) {
       console.error('❌ Failed to connect to webhook stream:', error);
+      console.log('🔌 Check your VITE_WS_URL in .env file');
     }
   }
 

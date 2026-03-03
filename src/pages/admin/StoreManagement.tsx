@@ -168,17 +168,21 @@ export default function StoreManagement() {
   const loadStores = async () => {
     try {
       setLoading(true);
+      
+      // Try to load from real API first
       const response = await shopifyApi.getStores(filters);
       if (response.success) {
         setStores(response.data);
+        console.log('✅ Loaded stores from Shopify app');
       } else {
-        toast.error(response.message || 'Failed to load stores');
+        throw new Error(response.message || 'API returned error');
       }
+      
     } catch (error) {
-      console.error('Failed to load stores:', error);
-      toast.error('Failed to load stores');
-      // Fallback to mock data for development
-      setStores(mockStores);
+      console.error('❌ Failed to load stores from API:', error);
+      console.log('📊 Using mock data - check your Shopify app connection');
+      toast.error('Using mock data - Shopify app not responding');
+      setStores(mockStores); // Fallback to mock data
     } finally {
       setLoading(false);
     }
