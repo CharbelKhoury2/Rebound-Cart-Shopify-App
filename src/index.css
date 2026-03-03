@@ -1,70 +1,102 @@
 @import url('https://fonts.googleapis.com/css2?family=Lexend+Deca:wght@100;200;300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap');
 
+@import './colors.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 222 47% 6%;
-    --foreground: 210 40% 96%;
-
-    --card: 222 47% 8%;
-    --card-foreground: 210 40% 96%;
-
-    --popover: 222 47% 10%;
-    --popover-foreground: 210 40% 96%;
-
-    --primary: 239 84% 67%;
-    --primary-foreground: 0 0% 100%;
-
-    --secondary: 222 47% 14%;
-    --secondary-foreground: 210 40% 90%;
-
-    --muted: 222 30% 14%;
-    --muted-foreground: 215 20% 55%;
-
-    --accent: 222 47% 16%;
-    --accent-foreground: 210 40% 96%;
-
-    --destructive: 0 72% 51%;
-    --destructive-foreground: 0 0% 100%;
-
-    --border: 222 30% 16%;
-    --input: 222 30% 16%;
-    --ring: 239 84% 67%;
-
-    --radius: 0.5rem;
-
-    /* Tier colors */
-    --tier-platinum: 239 84% 71%;
-    --tier-gold: 48 97% 54%;
-    --tier-silver: 215 16% 62%;
-    --tier-bronze: 28 80% 37%;
-
-    /* Status colors */
-    --status-success: 142 71% 45%;
+    /* Light Mode Colors - Standard HSL Values */
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 84% 4.9%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222.2 84% 4.9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    
+    /* Status Colors - Direct values */
+    --status-success: 142 76% 36%;
     --status-warning: 38 92% 50%;
-    --status-pending: 217 91% 60%;
-    --status-live: 142 71% 45%;
+    --status-error: 0 84% 60%;
+    --status-pending: 215 20% 65%;
+    --status-live: 221.2 83.2% 53.3%;
+    
+    /* Tier Colors - Standard values */
+    --tier-bronze: 38 42% 47%;
+    --tier-silver: 0 0% 75%;
+    --tier-gold: 51 100% 50%;
+    --tier-platinum: 210 20% 85%;
+    
+    /* Sidebar Colors */
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
 
-    /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(239 84% 67%), hsl(260 84% 60%));
-    --gradient-card: linear-gradient(145deg, hsl(222 47% 10%), hsl(222 47% 7%));
-    --gradient-surface: linear-gradient(180deg, hsl(222 47% 9%), hsl(222 47% 6%));
-
-    /* Shadows */
-    --shadow-card: 0 4px 24px -4px hsl(0 0% 0% / 0.4);
-    --shadow-glow: 0 0 20px hsl(239 84% 67% / 0.15);
-
-    --sidebar-background: 222 47% 5%;
-    --sidebar-foreground: 210 40% 90%;
-    --sidebar-primary: 239 84% 67%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 222 47% 12%;
-    --sidebar-accent-foreground: 210 40% 96%;
-    --sidebar-border: 222 30% 14%;
-    --sidebar-ring: 239 84% 67%;
+  .dark {
+    /* Dark Mode Colors - Standard HSL Values */
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 84% 4.9%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 94.1%;
+    
+    /* Status Colors - Adjusted for dark mode */
+    --status-success: 142 76% 36%;
+    --status-warning: 38 92% 50%;
+    --status-error: 0 62.8% 30.6%;
+    --status-pending: 215 20% 65%;
+    --status-live: 217.2 91.2% 59.8%;
+    
+    /* Tier Colors - Adjusted for dark mode */
+    --tier-bronze: 38 42% 47%;
+    --tier-silver: 0 0% 75%;
+    --tier-gold: 51 100% 50%;
+    --tier-platinum: 210 20% 85%;
+    
+    /* Sidebar Colors */
+    --sidebar-background: 222.2 84% 4.9%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 217.2 91.2% 59.8%;
+    --sidebar-primary-foreground: 222.2 84% 4.9%;
+    --sidebar-accent: 217.2 32.6% 17.5%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 217.2 32.6% 17.5%;
+    --sidebar-ring: 224.3 76.3% 94.1%;
   }
 }
 
@@ -84,37 +116,77 @@
 }
 
 @layer components {
+  /* Direct color classes for immediate use */
+  .bg-red { background-color: #ef4444 !important; }
+  .bg-green { background-color: #22c55e !important; }
+  .bg-blue { background-color: #3b82f6 !important; }
+  .bg-yellow { background-color: #eab308 !important; }
+  .bg-orange { background-color: #f97316 !important; }
+  .bg-purple { background-color: #a855f7 !important; }
+  .bg-gray { background-color: #6b7280 !important; }
+  .bg-white { background-color: #ffffff !important; }
+  .bg-black { background-color: #000000 !important; }
+  
+  .text-red { color: #ef4444 !important; }
+  .text-green { color: #22c55e !important; }
+  .text-blue { color: #3b82f6 !important; }
+  .text-yellow { color: #eab308 !important; }
+  .text-orange { color: #f97316 !important; }
+  .text-purple { color: #a855f7 !important; }
+  .text-gray { color: #6b7280 !important; }
+  .text-white { color: #ffffff !important; }
+  .text-black { color: #000000 !important; }
+  
+  .border-red { border-color: #ef4444 !important; }
+  .border-green { border-color: #22c55e !important; }
+  .border-blue { border-color: #3b82f6 !important; }
+  .border-yellow { border-color: #eab308 !important; }
+  .border-orange { border-color: #f97316 !important; }
+  .border-purple { border-color: #a855f7 !important; }
+  .border-gray { border-color: #6b7280 !important; }
+  .border-white { border-color: #ffffff !important; }
+  .border-black { border-color: #000000 !important; }
+
+  /* Dark mode specific colors */
+  .dark .bg-card { background-color: #1e293b !important; }
+  .dark .bg-background { background-color: #0f172a !important; }
+  .dark .text-foreground { color: #f8fafc !important; }
+  .dark .text-card-foreground { color: #f8fafc !important; }
+  .dark .border-border { border-color: #334155 !important; }
+  .dark .bg-muted { background-color: #334155 !important; }
+  .dark .text-muted-foreground { color: #94a3b8 !important; }
+
   .glass-card {
     @apply bg-card/80 backdrop-blur-xl border border-border/50 rounded-lg;
-    box-shadow: var(--shadow-card);
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
   }
 
   .glow-border {
-    box-shadow: var(--shadow-glow);
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
   }
 
   .tier-platinum {
-    color: hsl(var(--tier-platinum));
-    background: hsl(var(--tier-platinum) / 0.12);
-    border-color: hsl(var(--tier-platinum) / 0.3);
+    color: #94a3b8;
+    background: rgba(148, 163, 184, 0.12);
+    border-color: rgba(148, 163, 184, 0.3);
   }
 
   .tier-gold {
-    color: hsl(var(--tier-gold));
-    background: hsl(var(--tier-gold) / 0.12);
-    border-color: hsl(var(--tier-gold) / 0.3);
+    color: #facc15;
+    background: rgba(250, 204, 21, 0.12);
+    border-color: rgba(250, 204, 21, 0.3);
   }
 
   .tier-silver {
-    color: hsl(var(--tier-silver));
-    background: hsl(var(--tier-silver) / 0.12);
-    border-color: hsl(var(--tier-silver) / 0.3);
+    color: #9ca3af;
+    background: rgba(156, 163, 175, 0.12);
+    border-color: rgba(156, 163, 175, 0.3);
   }
 
   .tier-bronze {
-    color: hsl(var(--tier-bronze));
-    background: hsl(var(--tier-bronze) / 0.12);
-    border-color: hsl(var(--tier-bronze) / 0.3);
+    color: #cd7f32;
+    background: rgba(205, 127, 50, 0.12);
+    border-color: rgba(205, 127, 50, 0.3);
   }
 
   @keyframes pulse-live {

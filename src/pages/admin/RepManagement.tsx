@@ -1,16 +1,34 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { mockUsers } from "@/data/mockData";
 import { TierBadge } from "@/components/TierBadge";
 import type { PlatformUser, UserStatus, Tier } from "@/types";
 import { toast } from "sonner";
-import { CheckCircle, XCircle, UserCheck } from "lucide-react";
+import { CheckCircle, XCircle, UserCheck, Search, Filter } from "lucide-react";
 
 export default function RepManagement() {
   const [users, setUsers] = useState<PlatformUser[]>(mockUsers.filter((u) => u.role === "SALES_REP"));
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<UserStatus | "ALL">("ALL");
+  const [tierFilter, setTierFilter] = useState<Tier | "ALL">("ALL");
 
-  const pendingUsers = users.filter((u) => u.status === "PENDING");
-  const activeUsers = users.filter((u) => u.status === "ACTIVE");
-  const inactiveUsers = users.filter((u) => u.status === "INACTIVE");
+  // Filter users based on search and filters
+  const filteredUsers = useMemo(() => {
+    return users.filter((user) => {
+      const matchesSearch = searchTerm === "" || 
+        user.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.email.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      const matchesStatus = statusFilter === "ALL" || user.status === statusFilter;
+      const matchesTier = tierFilter === "ALL" || user.tier === tierFilter;
+      
+      return matchesSearch && matchesStatus && matchesTier;
+    });
+  }, [users, searchTerm, statusFilter, tierFilter]);
+
+  const pendingUsers = filteredUsers.filter((u) => u.status === "PENDING");
+  const activeUsers = filteredUsers.filter((u) => u.status === "ACTIVE");
+  const inactiveUsers = filteredUsers.filter((u) => u.status === "INACTIVE");
 
   const updateStatus = (id: string, status: UserStatus) => {
     setUsers((prev) => prev.map((u) => (u.id === id ? { ...u, status } : u)));
@@ -98,6 +116,63 @@ export default function RepManagement() {
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-foreground">Rep Management</h1>
         <p className="text-sm text-muted-foreground mt-1">Approve reps, manage tiers, and monitor the sales force</p>
+      </div>
+
+      {/* Search and Filters */}
+      <div className="glass-card p-4 mb-6">
+        <div className="flex flex-col lg:flex-row gap-4">
+          <div className="flex-1">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <input
+                type="text"
+                placeholder="Search reps by name or email..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 rounded-md border border-border bg-secondary text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+              />
+            </div>
+          </div>
+          <div className="flex gap-3">
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value as UserStatus | "ALL")}
+              className="px-3 py-2 rounded-md border border-border bg-secondary text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+            >
+              <option value="ALL">All Statuses</option>
+              <option value="PENDING">Pending</option>
+              <option value="ACTIVE">Active</option>
+              <option value="INACTIVE">Inactive</option>
+            </select>
+            <select
+              value={tierFilter}
+              onChange={(e) => setTierFilter(e.target.value as Tier | "ALL")}
+              className="px-3 py-2 rounded-md border border-border bg-secondary text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+            >
+              <option value="ALL">All Tiers</option>
+              <option value="BRONZE">Bronze</option>
+              <option value="SILVER">Silver</option>
+              <option value="GOLD">Gold</option>
+              <option value="PLATINUM">Platinum</option>
+            </select>
+          </div>
+        </div>
+        {(searchTerm || statusFilter !== "ALL" || tierFilter !== "ALL") && (
+          <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
+            <Filter className="h-3 w-3" />
+            <span>Showing {filteredUsers.length} of {users.length} reps</span>
+            <button
+              onClick={() => {
+                setSearchTerm("");
+                setStatusFilter("ALL");
+                setTierFilter("ALL");
+              }}
+              className="text-primary hover:underline"
+            >
+              Clear filters
+            </button>
+          </div>
+        )}
       </div>
 
       {renderTable("Pending Approval", pendingUsers, <UserCheck className="h-4 w-4 text-status-pending" />)}

@@ -1,0 +1,78 @@
+/* WORKING COLORS - Direct CSS Classes */
+
+/* Basic Colors */
+.bg-red { background-color: #ef4444 !important; }
+.bg-green { background-color: #22c55e !important; }
+.bg-blue { background-color: #3b82f6 !important; }
+.bg-yellow { background-color: #eab308 !important; }
+.bg-orange { background-color: #f97316 !important; }
+.bg-purple { background-color: #a855f7 !important; }
+.bg-pink { background-color: #ec4899 !important; }
+.bg-gray { background-color: #6b7280 !important; }
+.bg-white { background-color: #ffffff !important; }
+.bg-black { background-color: #000000 !important; }
+
+.text-red { color: #ef4444 !important; }
+.text-green { color: #22c55e !important; }
+.text-blue { color: #3b82f6 !important; }
+.text-yellow { color: #eab308 !important; }
+.text-orange { color: #f97316 !important; }
+.text-purple { color: #a855f7 !important; }
+.text-pink { color: #ec4899 !important; }
+.text-gray { color: #6b7280 !important; }
+.text-white { color: #ffffff !important; }
+.text-black { color: #000000 !important; }
+
+.border-red { border-color: #ef4444 !important; }
+.border-green { border-color: #22c55e !important; }
+.border-blue { border-color: #3b82f6 !important; }
+.border-yellow { border-color: #eab308 !important; }
+.border-orange { border-color: #f97316 !important; }
+.border-purple { border-color: #a855f7 !important; }
+.border-pink { border-color: #ec4899 !important; }
+.border-gray { border-color: #6b7280 !important; }
+.border-white { border-color: #ffffff !important; }
+.border-black { border-color: #000000 !important; }
+
+/* Dark Mode Overrides */
+.dark .bg-white { background-color: #1e293b !important; }
+.dark .bg-gray { background-color: #374151 !important; }
+.dark .text-white { color: #f8fafc !important; }
+.dark .text-gray { color: #94a3b8 !important; }
+.dark .border-gray { border-color: #4b5563 !important; }
+
+/* Tier Colors */
+.tier-bronze { 
+  color: #cd7f32 !important; 
+  background: rgba(205, 127, 50, 0.12) !important; 
+  border-color: rgba(205, 127, 50, 0.3) !important; 
+}
+.tier-silver { 
+  color: #9ca3af !important; 
+  background: rgba(156, 163, 175, 0.12) !important; 
+  border-color: rgba(156, 163, 175, 0.3) !important; 
+}
+.tier-gold { 
+  color: #facc15 !important; 
+  background: rgba(250, 204, 21, 0.12) !important; 
+  border-color: rgba(250, 204, 21, 0.3) !important; 
+}
+.tier-platinum { 
+  color: #94a3b8 !important; 
+  background: rgba(148, 163, 184, 0.12) !important; 
+  border-color: rgba(148, 163, 184, 0.3) !important; 
+}
+
+/* Status Colors */
+.status-success { color: #22c55e !important; background: #22c55e20 !important; }
+.status-warning { color: #eab308 !important; background: #eab30820 !important; }
+.status-error { color: #ef4444 !important; background: #ef444420 !important; }
+.status-pending { color: #6b7280 !important; background: #6b728020 !important; }
+.status-live { color: #3b82f6 !important; background: #3b82f620 !important; }
+
+/* Dark Mode Status Colors */
+.dark .status-success { color: #4ade80 !important; background: #4ade8020 !important; }
+.dark .status-warning { color: #facc15 !important; background: #facc1520 !important; }
+.dark .status-error { color: #f87171 !important; background: #f8717120 !important; }
+.dark .status-pending { color: #9ca3af !important; background: #9ca3af20 !important; }
+.dark .status-live { color: #60a5fa !important; background: #60a5fa20 !important; }
