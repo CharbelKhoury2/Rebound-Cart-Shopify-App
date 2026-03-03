@@ -2,11 +2,22 @@ import { useState, useMemo } from "react";
 import { mockCheckouts, mockCommissions, mockUsers } from "@/data/mockData";
 import { MetricCard } from "@/components/MetricCard";
 import { StatusDot } from "@/components/StatusDot";
-import { Calendar, TrendingUp, Users, DollarSign, Activity, Download, Filter } from "lucide-react";
+import { ReportGenerator } from "@/components/admin/ReportGenerator";
+import { Calendar, TrendingUp, Users, DollarSign, Activity, Download, Filter, Search, X } from "lucide-react";
 import { 
   LineChart, Line, BarChart, Bar, AreaChart, Area, PieChart, Pie, Cell, 
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend 
 } from "recharts";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type TimeRange = "7d" | "30d" | "90d" | "1y";
 type MetricType = "revenue" | "recoveries" | "commissions" | "users";
@@ -14,6 +25,83 @@ type MetricType = "revenue" | "recoveries" | "commissions" | "users";
 export default function Analytics() {
   const [timeRange, setTimeRange] = useState<TimeRange>("30d");
   const [selectedMetric, setSelectedMetric] = useState<MetricType>("revenue");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
+  const [isGeneratingReport, setIsGeneratingReport] = useState(false);
+  
+  // Advanced filters
+  const [filters, setFilters] = useState({
+    stores: [] as string[],
+    reps: [] as string[],
+    tiers: [] as string[],
+    status: [] as string[],
+    minRevenue: "",
+    maxRevenue: "",
+    minRecoveries: "",
+    maxRecoveries: ""
+  });
+
+  // Get unique values for filter options
+  const uniqueStores = useMemo(() => {
+    const stores = new Set(mockCheckouts.map(c => c.shopName));
+    return Array.from(stores);
+  }, []);
+
+  const uniqueReps = useMemo(() => {
+    const reps = new Set(mockCommissions.map(c => c.repName));
+    return Array.from(reps);
+  }, []);
+
+  const availableTiers = ["BRONZE", "SILVER", "GOLD", "PLATINUM"];
+  const availableStatus = ["ACTIVE", "PENDING", "INACTIVE"];
+
+  // Apply filters to data
+  const filteredData = useMemo(() => {
+    let filtered = [...mockCommissions];
+
+    if (searchTerm) {
+      filtered = filtered.filter(c => 
+        c.repName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        c.shopName.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    if (filters.stores.length > 0) {
+      filtered = filtered.filter(c => filters.stores.includes(c.shopName));
+    }
+
+    if (filters.reps.length > 0) {
+      filtered = filtered.filter(c => filters.reps.includes(c.repName));
+    }
+
+    if (filters.minRevenue) {
+      filtered = filtered.filter(c => c.totalAmount >= parseFloat(filters.minRevenue));
+    }
+
+    if (filters.maxRevenue) {
+      filtered = filtered.filter(c => c.totalAmount <= parseFloat(filters.maxRevenue));
+    }
+
+    return filtered;
+  }, [searchTerm, filters]);
+
+  const clearFilters = () => {
+    setFilters({
+      stores: [],
+      reps: [],
+      tiers: [],
+      status: [],
+      minRevenue: "",
+      maxRevenue: "",
+      minRecoveries: "",
+      maxRecoveries: ""
+    });
+    setSearchTerm("");
+  };
+
+  const activeFilterCount = Object.values(filters).filter(value => 
+    Array.isArray(value) ? value.length > 0 : value !== ""
+  ).length + (searchTerm ? 1 : 0);
 
   // Generate time-based data based on selected range
   const generateTimeSeriesData = (range: TimeRange) => {
@@ -86,6 +174,14 @@ export default function Analytics() {
     window.URL.revokeObjectURL(url);
   };
 
+  const handleGenerateReport = async (config: any) => {
+    setIsGeneratingReport(true);
+    // Simulate report generation
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    setIsGeneratingReport(false);
+    console.log("Generating report with config:", config);
+  };
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
@@ -118,6 +214,164 @@ export default function Analytics() {
           </button>
         </div>
       </div>
+
+      {/* Search and Filter Bar */}
+      <div className="flex flex-col lg:flex-row gap-4 mb-6">
+        <div className="flex-1 relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search by rep name or store..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+        
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setShowFilters(!showFilters)}
+            className="flex items-center gap-2"
+          >
+            <Filter className="h-4 w-4" />
+            Filters
+            {activeFilterCount > 0 && (
+              <Badge variant="secondary" className="ml-1">
+                {activeFilterCount}
+              </Badge>
+            )}
+          </Button>
+          
+          {activeFilterCount > 0 && (
+            <Button
+              variant="ghost"
+              onClick={clearFilters}
+              className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
+            >
+              <X className="h-4 w-4" />
+              Clear
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {/* Advanced Filters Panel */}
+      {showFilters && (
+        <div className="glass-card p-6 mb-6">
+          <h3 className="text-lg font-semibold text-foreground mb-4">Advanced Filters</h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {/* Store Filter */}
+            <div>
+              <label className="text-sm font-medium text-foreground mb-2 block">Stores</label>
+              <Select
+                value={filters.stores[0] || ""}
+                onValueChange={(value) => 
+                  setFilters(prev => ({
+                    ...prev,
+                    stores: value ? [value] : []
+                  }))
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="All stores" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">All stores</SelectItem>
+                  {uniqueStores.map((store) => (
+                    <SelectItem key={store} value={store}>
+                      {store}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Rep Filter */}
+            <div>
+              <label className="text-sm font-medium text-foreground mb-2 block">Sales Reps</label>
+              <Select
+                value={filters.reps[0] || ""}
+                onValueChange={(value) => 
+                  setFilters(prev => ({
+                    ...prev,
+                    reps: value ? [value] : []
+                  }))
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="All reps" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">All reps</SelectItem>
+                  {uniqueReps.map((rep) => (
+                    <SelectItem key={rep} value={rep}>
+                      {rep}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Tier Filter */}
+            <div>
+              <label className="text-sm font-medium text-foreground mb-2 block">Tiers</label>
+              <Select
+                value={filters.tiers[0] || ""}
+                onValueChange={(value) => 
+                  setFilters(prev => ({
+                    ...prev,
+                    tiers: value ? [value] : []
+                  }))
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="All tiers" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">All tiers</SelectItem>
+                  {availableTiers.map((tier) => (
+                    <SelectItem key={tier} value={tier}>
+                      {tier.charAt(0) + tier.slice(1).toLowerCase()}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Revenue Range */}
+            <div>
+              <label className="text-sm font-medium text-foreground mb-2 block">Min Revenue</label>
+              <Input
+                type="number"
+                placeholder="0"
+                value={filters.minRevenue}
+                onChange={(e) => 
+                  setFilters(prev => ({
+                    ...prev,
+                    minRevenue: e.target.value
+                  }))
+                }
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-medium text-foreground mb-2 block">Max Revenue</label>
+              <Input
+                type="number"
+                placeholder="No limit"
+                value={filters.maxRevenue}
+                onChange={(e) => 
+                  setFilters(prev => ({
+                    ...prev,
+                    maxRevenue: e.target.value
+                  }))
+                }
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
@@ -243,6 +497,15 @@ export default function Analytics() {
             </LineChart>
           </ResponsiveContainer>
         </div>
+      </div>
+
+      {/* Report Generator */}
+      <div className="mb-8">
+        <ReportGenerator
+          data={filteredData}
+          onGenerateReport={handleGenerateReport}
+          isLoading={isGeneratingReport}
+        />
       </div>
 
       {/* Top Performers Table */}

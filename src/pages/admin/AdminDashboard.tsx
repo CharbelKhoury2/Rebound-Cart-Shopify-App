@@ -2,16 +2,74 @@ import { mockCheckouts, mockCommissions, mockUsers } from "@/data/mockData";
 import { MetricCard } from "@/components/MetricCard";
 import { KPICard, KPIDashboard, KPITrend } from "@/components/KPIDashboard";
 import { StatusDot } from "@/components/StatusDot";
-import { DollarSign, ShoppingCart, Users, TrendingUp, Activity, ArrowUpRight, ArrowDownRight, Target, Zap } from "lucide-react";
+import { SalesChart } from "@/components/admin/SalesChart";
+import { PerformanceMetrics, createRevenueMetrics, createOperationalMetrics } from "@/components/admin/PerformanceMetrics";
+import { DollarSign, ShoppingCart, Users, TrendingUp, Activity, ArrowUpRight, ArrowDownRight, Target, Zap, RefreshCw } from "lucide-react";
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from "recharts";
+import { useState, useEffect } from "react";
 
 export default function AdminDashboard() {
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState(new Date());
+
   const totalRecovered = mockCheckouts.filter((c) => c.status === "RECOVERED").length;
   const totalRevenue = mockCommissions.reduce((s, c) => s + c.totalAmount, 0);
   const platformRevenue = mockCommissions.reduce((s, c) => s + c.platformFee, 0);
   const pendingPayout = mockCommissions.filter((c) => c.status === "PENDING").reduce((s, c) => s + c.commissionAmount, 0);
   const activeReps = mockUsers.filter((u) => u.role === "SALES_REP" && u.status === "ACTIVE").length;
   const pendingReps = mockUsers.filter((u) => u.status === "PENDING").length;
+
+  // Enhanced data for new components
+  const salesData = [
+    { date: '2024-01-01', revenue: 4000, orders: 24, averageOrderValue: 167, recoveryRate: 22.5 },
+    { date: '2024-01-02', revenue: 3000, orders: 18, averageOrderValue: 167, recoveryRate: 24.8 },
+    { date: '2024-01-03', revenue: 5000, orders: 29, averageOrderValue: 172, recoveryRate: 26.2 },
+    { date: '2024-01-04', revenue: 2780, orders: 15, averageOrderValue: 185, recoveryRate: 23.1 },
+    { date: '2024-01-05', revenue: 6890, orders: 38, averageOrderValue: 181, recoveryRate: 28.4 },
+    { date: '2024-01-06', revenue: 7390, orders: 42, averageOrderValue: 176, recoveryRate: 31.2 },
+    { date: '2024-01-07', revenue: 8200, orders: 45, averageOrderValue: 182, recoveryRate: 29.6 },
+  ];
+
+  const revenueMetricsData = {
+    totalRevenue,
+    previousRevenue: totalRevenue * 0.85,
+    revenueTarget: 50000,
+    averageOrderValue: salesData.reduce((sum, item) => sum + item.averageOrderValue, 0) / salesData.length,
+    previousAOV: 165,
+    aovTarget: 200,
+    recoveryRate: salesData.reduce((sum, item) => sum + item.recoveryRate, 0) / salesData.length,
+    previousRecoveryRate: 24.5,
+    recoveryRateTarget: 30,
+    activeReps,
+    previousActiveReps: activeReps - 2,
+    activeRepsTarget: 25
+  };
+
+  const operationalMetricsData = {
+    averageResponseTime: 12,
+    responseTimeTarget: 15,
+    dailyProcessed: 156,
+    previousDailyProcessed: 142,
+    successRate: 28.4,
+    successRateTarget: 25,
+    efficiencyScore: 87,
+    previousEfficiencyScore: 82
+  };
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    // Simulate API call
+    setTimeout(() => {
+      setIsRefreshing(false);
+      setLastUpdated(new Date());
+    }, 1000);
+  };
+
+  // Auto-refresh every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(handleRefresh, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Sample data for charts
   const revenueData = [
@@ -64,10 +122,51 @@ export default function AdminDashboard() {
         <div>
           <h1 className="text-2xl font-bold text-foreground">Platform Dashboard</h1>
           <p className="text-sm text-muted-foreground mt-1">Global performance overview</p>
+          <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
+            <RefreshCw className={`h-3 w-3 ${isRefreshing ? 'animate-spin' : ''}`} />
+            Last updated: {lastUpdated.toLocaleTimeString()}
+          </div>
         </div>
-        <StatusDot status="live" label="Live" />
+        <div className="flex items-center gap-3">
+          <StatusDot status="live" label="Live" />
+        </div>
       </div>
 
+      {/* Enhanced Performance Metrics */}
+      <div className="mb-8">
+        <PerformanceMetrics
+          metrics={createRevenueMetrics(revenueMetricsData)}
+          title="Revenue Performance"
+          showTrends={true}
+          showTargets={true}
+          refreshInterval={30000}
+          onRefresh={handleRefresh}
+        />
+      </div>
+
+      {/* Interactive Sales Chart */}
+      <div className="mb-8">
+        <SalesChart
+          data={salesData}
+          title="Sales Analytics & Trends"
+          height={350}
+          showControls={true}
+          chartType="area"
+          timeRange="week"
+        />
+      </div>
+
+      {/* Operational Metrics */}
+      <div className="mb-8">
+        <PerformanceMetrics
+          metrics={createOperationalMetrics(operationalMetricsData)}
+          title="Operational Performance"
+          showTrends={true}
+          showTargets={true}
+        />
+      </div>
+
+      {/* Quick Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <MetricCard title="Total Recovered Revenue" value={`$${totalRevenue.toLocaleString()}`} subtitle={`${totalRecovered} recoveries`} icon={<TrendingUp className="h-5 w-5" />} />
         <MetricCard title="Platform Revenue" value={`$${platformRevenue.toFixed(2)}`} subtitle="Net fees earned" icon={<DollarSign className="h-5 w-5" />} />

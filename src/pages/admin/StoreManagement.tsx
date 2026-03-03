@@ -1,9 +1,20 @@
 import { useState, useEffect, useMemo } from "react";
-import { Search, Filter, Download, MoreVertical, Eye, Edit, Trash2, Globe, Mail, Phone, Calendar, TrendingUp, Users, DollarSign, ShoppingCart, AlertCircle, CheckCircle, Clock, RefreshCw } from "lucide-react";
+import { Search, Filter, Download, MoreVertical, Eye, Edit, Trash2, Globe, Mail, Phone, Calendar, TrendingUp, Users, DollarSign, ShoppingCart, AlertCircle, CheckCircle, Clock, RefreshCw, CheckSquare, Square, Play, Pause, Archive } from "lucide-react";
 import { ShopifyStore, StoreFilters } from "@/types/store";
 import { shopifyApi } from "@/services/shopifyApiService";
 import { webhookService } from "@/services/shopifyWebhookService";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { StoreHealthIndicator, StoreHealthSummary } from "@/components/admin/StoreHealthIndicator";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogTrigger 
+} from "@/components/ui/dialog";
 
 // Mock data - replace with actual API call
 const mockStores: ShopifyStore[] = [
@@ -157,8 +168,79 @@ export default function StoreManagement() {
     plan: "",
     country: "",
     dateRange: "",
+    tags: [],
+    minRevenue: "",
+    maxRevenue: "",
+    minRecoveryRate: "",
+    maxRecoveryRate: ""
   });
   const [selectedStores, setSelectedStores] = useState<string[]>([]);
+  const [showBulkActions, setShowBulkActions] = useState(false);
+  const [isBulkProcessing, setIsBulkProcessing] = useState(false);
+
+  // Generate health metrics for stores
+  const generateHealthMetrics = (store: ShopifyStore) => {
+    return {
+      recoveryRate: store.recoveryRate,
+      revenueGrowth: Math.random() * 20 - 5, // Random growth between -5% and 15%
+      activeUsers: Math.floor(Math.random() * 200) + 20,
+      responseTime: Math.floor(Math.random() * 800) + 100,
+      errorRate: Math.random() * 15,
+      lastSync: new Date(Date.now() - Math.random() * 3600000),
+      uptime: 95 + Math.random() * 5
+    };
+  };
+
+  // Bulk operations
+  const handleBulkAction = async (action: 'activate' | 'deactivate' | 'delete' | 'sync' | 'Contact' | 'Suspend') => {
+    if (selectedStores.length === 0) return;
+    
+    setIsBulkProcessing(true);
+    try {
+      switch (action) {
+        case 'activate':
+          await new Promise(resolve => setTimeout(resolve, 1500));
+          toast.success(`Activated ${selectedStores.length} stores`);
+          break;
+        case 'deactivate':
+          await new Promise(resolve => setTimeout(resolve, 1500));
+          toast.success(`Deactivated ${selectedStores.length} stores`);
+          break;
+        case 'delete':
+          if (confirm(`Are you sure you want to delete ${selectedStores.length} stores?`)) {
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            toast.success(`Deleted ${selectedStores.length} stores`);
+            setStores(prev => prev.filter(store => !selectedStores.includes(store.id)));
+          }
+          break;
+        case 'sync':
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          toast.success(`Synced ${selectedStores.length} stores`);
+          break;
+        case 'Contact':
+          toast.success(`Contacted ${selectedStores.length} stores`);
+          break;
+        case 'Suspend':
+          await shopifyApi.bulkSyncStores(selectedStores);
+          toast.success(`Suspended ${selectedStores.length} stores`);
+          break;
+      }
+      setSelectedStores([]);
+      loadStores(); // Refresh data
+    } catch (error) {
+      toast.error('Bulk operation failed');
+    } finally {
+      setIsBulkProcessing(false);
+    }
+  };
+
+  const selectAllStores = () => {
+    if (selectedStores.length === filteredStores.length) {
+      setSelectedStores([]);
+    } else {
+      setSelectedStores(filteredStores.map(store => store.id));
+    }
+  };
 
   // Load stores from API
   useEffect(() => {
@@ -236,28 +318,7 @@ export default function StoreManagement() {
     }
   };
 
-  const handleBulkAction = async (action: string) => {
-    try {
-      switch (action) {
-        case 'Contact':
-          // Implement bulk contact logic
-          toast.success(`Contacted ${selectedStores.length} stores`);
-          break;
-        case 'Suspend':
-          await shopifyApi.bulkSyncStores(selectedStores);
-          toast.success(`Suspended ${selectedStores.length} stores`);
-          break;
-        default:
-          toast.success(`${action} ${selectedStores.length} stores`);
-      }
-      setSelectedStores([]);
-      loadStores(); // Refresh data
-    } catch (error) {
-      console.error('Bulk action failed:', error);
-      toast.error('Bulk action failed');
-    }
-  };
-
+  
   const handleSyncStore = async (storeId: string) => {
     try {
       await shopifyApi.syncStoreData(storeId);
@@ -338,16 +399,86 @@ export default function StoreManagement() {
             </div>
           </div>
         </div>
-        
-        <div className="bg-white p-6 rounded-lg border border-gray">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray">Active Stores</p>
-              <p className="text-2xl font-bold text-green">{stats.activeStores}</p>
+        {/* ... other stat cards */}
+      </div>
+
+      {/* Store Health Summary */}
+      <div className="mb-6">
+        <StoreHealthSummary 
+          stores={filteredStores.map(store => ({
+            id: store.id,
+            name: store.shopName,
+            metrics: generateHealthMetrics(store)
+          }))}
+        />
+      </div>
+
+      {/* Bulk Actions Panel */}
+      {showBulkActions && selectedStores.length > 0 && (
+        <Card className="glass-card mb-6">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-semibold text-foreground">
+                  {selectedStores.length} store{selectedStores.length !== 1 ? 's' : ''} selected
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  Choose an action to perform on selected stores
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleBulkAction('activate')}
+                  disabled={isBulkProcessing}
+                >
+                  <Play className="h-4 w-4 mr-1" />
+                  Activate
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleBulkAction('deactivate')}
+                  disabled={isBulkProcessing}
+                >
+                  <Pause className="h-4 w-4 mr-1" />
+                  Deactivate
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleBulkAction('sync')}
+                  disabled={isBulkProcessing}
+                >
+                  <RefreshCw className="h-4 w-4 mr-1" />
+                  Sync
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleBulkAction('Contact')}
+                  disabled={isBulkProcessing}
+                >
+                  <Mail className="h-4 w-4 mr-1" />
+                  Contact
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => handleBulkAction('delete')}
+                  disabled={isBulkProcessing}
+                >
+                  <Trash2 className="h-4 w-4 mr-1" />
+                  Delete
+                </Button>
+              </div>
             </div>
-            <div className="p-3 bg-green/10 rounded-lg">
-              <CheckCircle className="h-6 w-6 text-green" />
-            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Filters and Search */}
           </div>
         </div>
         

@@ -1,15 +1,46 @@
 import { useState, useMemo } from "react";
 import { mockUsers } from "@/data/mockData";
 import { TierBadge } from "@/components/TierBadge";
+import { PerformanceTracker, PerformanceLeaderboard } from "@/components/admin/PerformanceTracker";
+import { TrainingResources, TrainingSummary } from "@/components/admin/TrainingResources";
 import type { PlatformUser, UserStatus, Tier } from "@/types";
 import { toast } from "sonner";
-import { CheckCircle, XCircle, UserCheck, Search, Filter } from "lucide-react";
+import { CheckCircle, XCircle, UserCheck, Search, Filter, TrendingUp, Award, BookOpen, BarChart3 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function RepManagement() {
   const [users, setUsers] = useState<PlatformUser[]>(mockUsers.filter((u) => u.role === "SALES_REP"));
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<UserStatus | "ALL">("ALL");
   const [tierFilter, setTierFilter] = useState<Tier | "ALL">("ALL");
+  const [selectedRep, setSelectedRep] = useState<string | null>(null);
+  const [completedTrainingModules, setCompletedTrainingModules] = useState<Record<string, string[]>>({});
+
+  // Generate mock performance metrics for reps
+  const generatePerformanceMetrics = (user: PlatformUser) => {
+    return {
+      totalRecoveries: Math.floor(Math.random() * 50) + 10,
+      recoveryRate: Math.random() * 20 + 15, // 15-35%
+      averageResponseTime: Math.floor(Math.random() * 15) + 5, // 5-20 minutes
+      totalRevenue: Math.floor(Math.random() * 15000) + 3000, // $3k-$18k
+      customerSatisfaction: Math.random() * 15 + 80, // 80-95%
+      weeklyProgress: Array.from({length: 4}, () => Math.floor(Math.random() * 10)),
+      monthlyTarget: 10000,
+      rank: Math.floor(Math.random() * 10) + 1,
+      totalReps: users.length
+    };
+  };
+
+  const handleModuleComplete = (repId: string, moduleId: string) => {
+    setCompletedTrainingModules(prev => ({
+      ...prev,
+      [repId]: [...(prev[repId] || []), moduleId]
+    }));
+    toast.success("Training module marked as complete");
+  };
 
   // Filter users based on search and filters
   const filteredUsers = useMemo(() => {

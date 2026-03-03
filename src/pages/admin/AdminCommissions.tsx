@@ -1,19 +1,127 @@
 import { useState } from "react";
-import { mockCommissions } from "@/data/mockData";
+import { mockCommissions, mockUsers } from "@/data/mockData";
 import { MetricCard } from "@/components/MetricCard";
+import { CommissionCalculator } from "@/components/admin/CommissionCalculator";
+import { PayoutScheduler } from "@/components/admin/PayoutScheduler";
 import type { Commission } from "@/types";
 import { toast } from "sonner";
-import { DollarSign, Clock, CheckCircle, Download, Search, CheckSquare } from "lucide-react";
+import { DollarSign, Clock, CheckCircle, Download, Search, CheckSquare, Calculator, Calendar, BarChart3, Settings } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function AdminCommissions() {
   const [commissions, setCommissions] = useState<Commission[]>(mockCommissions);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCommissions, setSelectedCommissions] = useState<string[]>([]);
+  const [calculatedCommissions, setCalculatedCommissions] = useState<any[]>([]);
+
+  // Mock data for new features
+  const [payoutSchedules, setPayoutSchedules] = useState([
+    {
+      id: 'weekly-payout',
+      name: 'Weekly Payout Run',
+      frequency: 'weekly' as const,
+      nextRunDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      isActive: true,
+      autoApprove: true,
+      emailNotifications: true,
+      minimumPayout: 50,
+      processingFee: 2.5,
+      status: 'scheduled' as const
+    },
+    {
+      id: 'monthly-payout',
+      name: 'Monthly Payout Run',
+      frequency: 'monthly' as const,
+      nextRunDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      isActive: false,
+      autoApprove: false,
+      emailNotifications: true,
+      minimumPayout: 100,
+      processingFee: 1.5,
+      status: 'scheduled' as const
+    }
+  ]);
+
+  const [payoutBatches, setPayoutBatches] = useState([
+    {
+      id: 'batch-1',
+      scheduleId: 'weekly-payout',
+      period: 'Week 1 - March 2024',
+      totalAmount: 15420.50,
+      repCount: 12,
+      commissionCount: 89,
+      status: 'completed' as const,
+      createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+      processedAt: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000)
+    },
+    {
+      id: 'batch-2',
+      scheduleId: 'weekly-payout',
+      period: 'Week 2 - March 2024',
+      totalAmount: 18750.75,
+      repCount: 15,
+      commissionCount: 102,
+      status: 'pending' as const,
+      createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000)
+    }
+  ]);
+
+  // Generate mock orders for commission calculation
+  const mockOrders = mockUsers
+    .filter(user => user.role === 'SALES_REP')
+    .flatMap(user => 
+      Array.from({length: Math.floor(Math.random() * 5) + 1}, (_, i) => ({
+        id: `order-${user.id}-${i}`,
+        totalAmount: Math.floor(Math.random() * 2000) + 100,
+        repName: `${user.firstName} ${user.lastName}`,
+        repTier: user.tier,
+        productCategory: ['electronics', 'clothing', 'home', 'sports'][Math.floor(Math.random() * 4)]
+      }))
+    );
 
   const pending = commissions.filter((c) => c.status === "PENDING");
   const paid = commissions.filter((c) => c.status === "PAID");
   const pendingTotal = pending.reduce((s, c) => s + c.commissionAmount, 0);
   const paidTotal = paid.reduce((s, c) => s + c.commissionAmount, 0);
+
+  // Event handlers for new features
+  const handleCalculationsComplete = (calculations: any[]) => {
+    setCalculatedCommissions(calculations);
+    toast.success(`Calculated commissions for ${calculations.length} orders`);
+  };
+
+  const handleCreateSchedule = (schedule: any) => {
+    const newSchedule = { ...schedule, id: `schedule-${Date.now()}` };
+    setPayoutSchedules(prev => [...prev, newSchedule]);
+    toast.success('Payout schedule created successfully');
+  };
+
+  const handleToggleSchedule = (scheduleId: string) => {
+    setPayoutSchedules(prev => prev.map(schedule => 
+      schedule.id === scheduleId 
+        ? { ...schedule, isActive: !schedule.isActive }
+        : schedule
+    ));
+    toast.success('Schedule status updated');
+  };
+
+  const handleRunPayout = (scheduleId: string) => {
+    toast.success('Payout processing initiated');
+    // In a real app, this would trigger the payout process
+  };
+
+  const handleExportBatch = (batchId: string) => {
+    toast.success('Payout batch exported');
+    // In a real app, this would download the batch report
+  };
+
+  const handleResendNotifications = (batchId: string) => {
+    toast.success('Notifications resent successfully');
+    // In a real app, this would resend email notifications
+  };
 
   // Filter commissions based on search
   const filteredCommissions = commissions.filter((commission) => {

@@ -11,12 +11,15 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<Theme>(() => {
-    // Check localStorage first, then system preference
-    const stored = localStorage.getItem("reboundcart_theme") as Theme | null;
-    if (stored) return stored;
+    // Default to light mode
+    return "light";
     
-    // Check system preference
-    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    // Check localStorage first (but prioritize light mode)
+    const stored = localStorage.getItem("reboundcart_theme") as Theme | null;
+    if (stored && (stored === "light" || stored === "dark")) return stored;
+    
+    // Default to light mode instead of system preference
+    return "light";
   });
 
   useEffect(() => {

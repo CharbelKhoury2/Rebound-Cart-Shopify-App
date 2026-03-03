@@ -2,7 +2,6 @@ import { useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
 import { ShoppingCart, LayoutDashboard, Users, DollarSign, Zap, LogOut, Activity, TrendingUp, Store } from "lucide-react";
-import { ThemeToggle } from "@/components/ThemeToggle";
 
 export default function PortalLayout() {
   const { user, logout } = useSimpleAuth();
@@ -96,14 +95,8 @@ export default function PortalLayout() {
               <p className="text-xs text-muted-foreground truncate">{user?.role === "PLATFORM_ADMIN" ? "Administrator" : "Sales Representative"}</p>
             </div>
             
-            {/* Action Buttons */}
+            {/* Logout Button */}
             <div className="flex items-center gap-1">
-              {/* Theme Toggle */}
-              <div className="p-1 rounded hover:bg-sidebar-accent/50 transition-colors">
-                <ThemeToggle />
-              </div>
-              
-              {/* Logout Button */}
               <button 
                 onClick={handleLogout} 
                 className="p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all duration-200 group"

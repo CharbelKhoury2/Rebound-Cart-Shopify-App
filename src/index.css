@@ -54,49 +54,49 @@
   }
 
   .dark {
-    /* Dark Mode Colors - Standard HSL Values */
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 84% 4.9%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 94.1%;
+    /* Professional Dark Mode Colors - Clean & Modern */
+    --background: 24 24 27%;
+    --foreground: 248 248 252%;
+    --card: 30 30 31%;
+    --card-foreground: 248 248 252%;
+    --popover: 30 30 31%;
+    --popover-foreground: 248 248 252%;
+    --primary: 99 102 241%;
+    --primary-foreground: 248 248 252%;
+    --secondary: 39 39 42%;
+    --secondary-foreground: 248 248 252%;
+    --muted: 39 39 42%;
+    --muted-foreground: 230 230 230%;
+    --accent: 39 39 42%;
+    --accent-foreground: 248 248 252%;
+    --destructive: 248 58 58%;
+    --destructive-foreground: 248 248 252%;
+    --border: 39 39 42%;
+    --input: 39 39 42%;
+    --ring: 99 102 241%;
     
-    /* Status Colors - Adjusted for dark mode */
-    --status-success: 142 76% 36%;
-    --status-warning: 38 92% 50%;
-    --status-error: 0 62.8% 30.6%;
-    --status-pending: 215 20% 65%;
-    --status-live: 217.2 91.2% 59.8%;
+    /* Status Colors - Professional Dark Mode */
+    --status-success: 34 197 94%;
+    --status-warning: 251 146 60%;
+    --status-error: 248 58 58%;
+    --status-pending: 251 146 60%;
+    --status-live: 99 102 241%;
     
-    /* Tier Colors - Adjusted for dark mode */
-    --tier-bronze: 38 42% 47%;
-    --tier-silver: 0 0% 75%;
-    --tier-gold: 51 100% 50%;
-    --tier-platinum: 210 20% 85%;
+    /* Tier Colors - Professional Dark Mode */
+    --tier-bronze: 251 146 60%;
+    --tier-silver: 39 39 42%;
+    --tier-gold: 251 191 36%;
+    --tier-platinum: 39 39 42%;
     
-    /* Sidebar Colors */
-    --sidebar-background: 222.2 84% 4.9%;
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 217.2 91.2% 59.8%;
-    --sidebar-primary-foreground: 222.2 84% 4.9%;
-    --sidebar-accent: 217.2 32.6% 17.5%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 217.2 32.6% 17.5%;
-    --sidebar-ring: 224.3 76.3% 94.1%;
+    /* Sidebar Colors - Professional Dark Mode */
+    --sidebar-background: 30 30 31%;
+    --sidebar-foreground: 248 248 252%;
+    --sidebar-primary: 99 102 241%;
+    --sidebar-primary-foreground: 248 248 252%;
+    --sidebar-accent: 39 39 42%;
+    --sidebar-accent-foreground: 248 248 252%;
+    --sidebar-border: 39 39 42%;
+    --sidebar-ring: 99 102 241%;
   }
 }
 
@@ -108,17 +108,19 @@
   body {
     @apply bg-background text-foreground font-sans antialiased;
     font-family: 'Lexend Deca', system-ui, sans-serif;
-    overflow-x: hidden; /* Prevent horizontal scroll */
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 
   html {
     overflow-x: hidden; /* Prevent horizontal scroll at root level */
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 
   #root {
     overflow-x: hidden; /* Prevent horizontal scroll at app root */
     min-height: 100vh;
     width: 100%;
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 
   code, pre {
@@ -154,6 +156,53 @@
     overflow-wrap: break-word;
     word-wrap: break-word;
     hyphens: auto;
+  }
+
+  /* Smooth theme transitions */
+  .glass-card {
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+  }
+
+  .bg-card {
+    transition: background-color 0.3s ease;
+  }
+
+  .border-border {
+    transition: border-color 0.3s ease;
+  }
+
+  .text-foreground {
+    transition: color 0.3s ease;
+  }
+
+  .bg-sidebar {
+    transition: background-color 0.3s ease;
+  }
+
+  /* Enhanced scrollbar styling for dark mode */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--muted);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--muted-foreground);
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--accent);
+  }
+
+  .dark ::-webkit-scrollbar-track {
+    background: var(--sidebar-background);
+  }
+
+  .dark ::-webkit-scrollbar-thumb {
+    background: var(--sidebar-accent);
   }
 }
 
