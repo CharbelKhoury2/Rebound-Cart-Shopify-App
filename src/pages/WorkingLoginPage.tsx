@@ -9,6 +9,11 @@ export default function WorkingLoginPage() {
   // Debug: Show current state
   console.log('🔍 WorkingLoginPage state:', { user: user?.email, isLoading, email, password });
 
+  const clearSession = () => {
+    sessionStorage.clear();
+    window.location.reload();
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log('🔐 WorkingLoginPage login attempt:', { email, password, isLoading });
@@ -159,6 +164,16 @@ export default function WorkingLoginPage() {
             <p className="font-mono">Loading: {isLoading ? 'Yes' : 'No'}</p>
             <p className="font-mono">Email: {email || 'empty'}</p>
             <p className="font-mono">Password: {password ? '***' : 'empty'}</p>
+          </div>
+
+          {/* Clear Session Button */}
+          <div className="mt-3">
+            <button
+              onClick={clearSession}
+              className="w-full text-xs bg-red-500 text-white py-2 rounded hover:bg-red-600 transition-colors"
+            >
+              🧹 Clear Session & Reload
+            </button>
           </div>
         </div>
       </div>

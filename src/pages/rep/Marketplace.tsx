@@ -71,7 +71,7 @@ export default function Marketplace() {
   };
 
   return (
-    <div>
+    <div className="overflow-hidden">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Marketplace</h1>
@@ -142,24 +142,26 @@ export default function Marketplace() {
       </div>
 
       {/* Performance Chart */}
-      <div className="glass-card p-6 mb-8">
+      <div className="glass-card p-6 mb-8 overflow-hidden">
         <h2 className="text-sm font-semibold text-foreground mb-4">Today's Activity</h2>
-        <ResponsiveContainer width="100%" height={150}>
-          <LineChart data={performanceData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-            <XAxis dataKey="time" stroke="var(--muted-foreground)" fontSize={12} />
-            <YAxis stroke="var(--muted-foreground)" fontSize={12} />
-            <Tooltip 
-              contentStyle={{ 
-                backgroundColor: 'var(--card)', 
-                border: '1px solid var(--border)',
-                borderRadius: '8px'
-              }}
-            />
-            <Line type="monotone" dataKey="available" stroke="var(--primary)" strokeWidth={2} dot={false} />
-            <Line type="monotone" dataKey="claimed" stroke="var(--status-success)" strokeWidth={2} dot={false} />
-          </LineChart>
-        </ResponsiveContainer>
+        <div className="w-full overflow-hidden">
+          <ResponsiveContainer width="100%" height={150}>
+            <LineChart data={performanceData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+              <XAxis dataKey="time" stroke="var(--muted-foreground)" fontSize={12} />
+              <YAxis stroke="var(--muted-foreground)" fontSize={12} />
+              <Tooltip 
+                contentStyle={{ 
+                  backgroundColor: 'var(--card)', 
+                  border: '1px solid var(--border)',
+                  borderRadius: '8px'
+                }}
+              />
+              <Line type="monotone" dataKey="available" stroke="var(--primary)" strokeWidth={2} dot={false} />
+              <Line type="monotone" dataKey="claimed" stroke="var(--status-success)" strokeWidth={2} dot={false} />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
       </div>
 
       {available.length === 0 ? (

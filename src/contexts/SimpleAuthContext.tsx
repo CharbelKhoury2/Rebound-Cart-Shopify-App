@@ -22,7 +22,7 @@ export function SimpleAuthProvider({ children }: { children: ReactNode }) {
       try {
         const parsedUser = JSON.parse(storedUser);
         setUser(parsedUser);
-        console.log('✅ Loaded user from session:', parsedUser.email);
+        console.log('✅ Loaded user from session:', parsedUser.email, 'Role:', parsedUser.role);
       } catch (error) {
         console.error('Failed to parse stored user:', error);
         sessionStorage.removeItem('reboundcart_user');
@@ -42,7 +42,7 @@ export function SimpleAuthProvider({ children }: { children: ReactNode }) {
       setUser(found);
       // Store in sessionStorage
       sessionStorage.setItem('reboundcart_user', JSON.stringify(found));
-      console.log('✅ SimpleAuth login successful:', found.email);
+      console.log('✅ SimpleAuth login successful:', found.email, 'Role:', found.role);
       return true;
     }
     
@@ -54,6 +54,13 @@ export function SimpleAuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
     sessionStorage.removeItem('reboundcart_user');
     console.log('🔓 SimpleAuth logout successful');
+  };
+
+  // Force clear all session storage for debugging
+  const forceClearSession = () => {
+    sessionStorage.clear();
+    setUser(null);
+    console.log('🧹 Session storage cleared');
   };
 
   return (

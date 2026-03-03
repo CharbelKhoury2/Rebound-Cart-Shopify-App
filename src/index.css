@@ -108,10 +108,52 @@
   body {
     @apply bg-background text-foreground font-sans antialiased;
     font-family: 'Lexend Deca', system-ui, sans-serif;
+    overflow-x: hidden; /* Prevent horizontal scroll */
+  }
+
+  html {
+    overflow-x: hidden; /* Prevent horizontal scroll at root level */
+  }
+
+  #root {
+    overflow-x: hidden; /* Prevent horizontal scroll at app root */
+    min-height: 100vh;
+    width: 100%;
   }
 
   code, pre {
     font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* Prevent horizontal scroll on all elements */
+  * {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Handle potential overflow elements */
+  img, video, canvas, svg {
+    max-width: 100%;
+    height: auto;
+  }
+
+  table {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  pre {
+    max-width: 100%;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+
+  /* Prevent text overflow */
+  p, h1, h2, h3, h4, h5, h6 {
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    hyphens: auto;
   }
 }
 

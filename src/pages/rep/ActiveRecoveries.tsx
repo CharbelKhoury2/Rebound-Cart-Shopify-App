@@ -14,7 +14,7 @@ export default function ActiveRecoveries() {
   };
 
   return (
-    <div>
+    <div className="overflow-hidden">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-foreground">Active Recoveries</h1>
         <p className="text-sm text-muted-foreground mt-1">Manage your claimed carts and send recovery links</p>

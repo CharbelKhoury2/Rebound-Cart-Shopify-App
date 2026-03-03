@@ -11,7 +11,7 @@ export default function Earnings() {
   const paidAmount = paid.reduce((s, c) => s + c.commissionAmount, 0);
 
   return (
-    <div>
+    <div className="overflow-hidden">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-foreground">Earnings</h1>
         <p className="text-sm text-muted-foreground mt-1">Track your commissions and payouts</p>
@@ -27,24 +27,24 @@ export default function Earnings() {
         <div className="px-5 py-3 border-b border-border">
           <h2 className="text-sm font-semibold text-foreground">Commission History</h2>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+        <div className="overflow-x-auto max-w-full">
+          <table className="w-full text-sm min-w-[600px]">
             <thead>
               <tr className="border-b border-border">
-                <th className="text-left px-5 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">Shop</th>
-                <th className="text-right px-5 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">Order Value</th>
-                <th className="text-right px-5 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">Your Commission</th>
-                <th className="text-center px-5 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">Status</th>
-                <th className="text-right px-5 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">Date</th>
+                <th className="text-left px-5 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground whitespace-nowrap">Shop</th>
+                <th className="text-right px-5 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground whitespace-nowrap">Order Value</th>
+                <th className="text-right px-5 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground whitespace-nowrap">Your Commission</th>
+                <th className="text-center px-5 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground whitespace-nowrap">Status</th>
+                <th className="text-right px-5 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground whitespace-nowrap">Date</th>
               </tr>
             </thead>
             <tbody>
               {myCommissions.map((c) => (
                 <tr key={c.id} className="border-b border-border/50 hover:bg-accent/30 transition-colors">
-                  <td className="px-5 py-3 font-medium text-foreground">{c.shopName}</td>
-                  <td className="px-5 py-3 text-right text-muted-foreground">${c.totalAmount.toFixed(2)}</td>
-                  <td className="px-5 py-3 text-right font-semibold text-foreground">${c.commissionAmount.toFixed(2)}</td>
-                  <td className="px-5 py-3 text-center">
+                  <td className="px-5 py-3 font-medium text-foreground whitespace-nowrap">{c.shopName}</td>
+                  <td className="px-5 py-3 text-right text-muted-foreground whitespace-nowrap">${c.totalAmount.toFixed(2)}</td>
+                  <td className="px-5 py-3 text-right font-semibold text-foreground whitespace-nowrap">${c.commissionAmount.toFixed(2)}</td>
+                  <td className="px-5 py-3 text-center whitespace-nowrap">
                     <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${
                       c.status === "PAID"
                         ? "bg-status-success/10 text-status-success"
@@ -53,7 +53,7 @@ export default function Earnings() {
                       {c.status}
                     </span>
                   </td>
-                  <td className="px-5 py-3 text-right text-muted-foreground">{c.createdAt}</td>
+                  <td className="px-5 py-3 text-right text-muted-foreground whitespace-nowrap">{c.createdAt}</td>
                 </tr>
               ))}
             </tbody>

@@ -32,7 +32,7 @@ export default function PortalLayout() {
   };
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen overflow-hidden">
       {/* Mobile Menu Button */}
       <div className="lg:hidden fixed top-4 left-4 z-50">
         <button
@@ -48,8 +48,8 @@ export default function PortalLayout() {
       {/* Sidebar */}
       <aside className={`
         fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-border bg-sidebar
-        transform transition-transform duration-200 ease-in-out
-        lg:relative lg:translate-x-0 lg:sticky lg:top-0 lg:h-screen
+        transform transition-transform duration-200 ease-in-out overflow-hidden
+        lg:relative lg:translate-x-0 lg:sticky lg:top-0 lg:h-screen lg:overflow-hidden
         ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
         {/* Header */}
@@ -61,7 +61,7 @@ export default function PortalLayout() {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto overflow-x-hidden">
           {links.map((link) => (
             <NavLink
               key={link.to}
@@ -69,15 +69,15 @@ export default function PortalLayout() {
               end={link.end}
               onClick={() => setIsMobileMenuOpen(false)}
               className={({ isActive }) =>
-                `flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors ${
+                `flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors whitespace-nowrap overflow-hidden ${
                   isActive
                     ? "bg-sidebar-accent text-foreground"
                     : "text-muted-foreground hover:bg-sidebar-accent/50 hover:text-foreground"
                 }`
               }
             >
-              <link.icon className="h-4 w-4" />
-              {link.label}
+              <link.icon className="h-4 w-4 flex-shrink-0" />
+              <span className="truncate">{link.label}</span>
             </NavLink>
           ))}
         </nav>
@@ -136,8 +136,8 @@ export default function PortalLayout() {
       )}
 
       {/* Main content */}
-      <main className="flex-1 min-h-screen">
-        <div className="p-4 lg:p-8">
+      <main className="flex-1 min-h-screen overflow-hidden">
+        <div className="p-4 lg:p-8 overflow-auto h-full">
           <Outlet />
         </div>
       </main>
