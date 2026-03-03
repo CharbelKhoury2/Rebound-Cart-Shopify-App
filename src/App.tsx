@@ -15,6 +15,7 @@ import AdminDashboard from "@/pages/admin/AdminDashboard";
 import Analytics from "@/pages/admin/Analytics";
 import RepManagement from "@/pages/admin/RepManagement";
 import AdminCommissions from "@/pages/admin/AdminCommissions";
+import StoreManagement from "@/pages/admin/StoreManagement";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -45,6 +46,7 @@ const App = () => (
                   <Route path="/portal/admin/analytics" element={<Analytics />} />
                   <Route path="/portal/admin/reps" element={<RepManagement />} />
                   <Route path="/portal/admin/commissions" element={<AdminCommissions />} />
+                  <Route path="/portal/admin/stores" element={<StoreManagement />} />
                 </Route>
               </Route>
 

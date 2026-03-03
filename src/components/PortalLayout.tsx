@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { ShoppingCart, LayoutDashboard, Users, DollarSign, Zap, LogOut, Activity, TrendingUp } from "lucide-react";
+import { ShoppingCart, LayoutDashboard, Users, DollarSign, Zap, LogOut, Activity, TrendingUp, Store } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 export default function PortalLayout() {
@@ -13,6 +13,7 @@ export default function PortalLayout() {
   const adminLinks = [
     { to: "/portal/admin", icon: LayoutDashboard, label: "Dashboard", end: true },
     { to: "/portal/admin/analytics", icon: TrendingUp, label: "Analytics", end: false },
+    { to: "/portal/admin/stores", icon: Store, label: "Stores", end: false },
     { to: "/portal/admin/reps", icon: Users, label: "Rep Management", end: false },
     { to: "/portal/admin/commissions", icon: DollarSign, label: "Commissions", end: false },
   ];
