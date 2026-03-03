@@ -1,13 +1,26 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { mockCheckouts } from "@/data/mockData";
 import { StatusDot } from "@/components/StatusDot";
-import { ShoppingCart, ExternalLink, Clock, TrendingUp, Target, Zap } from "lucide-react";
+import { CartScoring, CartScoreComparison } from "@/components/rep/CartScoring";
+import { ShoppingCart, ExternalLink, Clock, TrendingUp, Target, Zap, Filter, SortAsc, SortDesc, BarChart3 } from "lucide-react";
 import { toast } from "sonner";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function Marketplace() {
   const [checkouts, setCheckouts] = useState(mockCheckouts);
   const [autoRefresh, setAutoRefresh] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortBy, setSortBy] = useState("score");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const [minValue, setMinValue] = useState("");
+  const [maxValue, setMaxValue] = useState("");
+  const [scoreFilter, setScoreFilter] = useState("all");
+  const [showComparison, setShowComparison] = useState(false);
 
   const available = checkouts.filter(
     (c) => c.claimedById === null && c.status === "ABANDONED"
@@ -16,6 +29,93 @@ export default function Marketplace() {
   const myCheckouts = checkouts.filter((c) => c.claimedById === "u2");
   const totalValue = available.reduce((sum, c) => sum + c.totalPrice, 0);
   const avgValue = available.length > 0 ? totalValue / available.length : 0;
+
+  // Enhanced filtering and sorting
+  const filteredAndSortedCarts = useMemo(() => {
+    let filtered = available.filter(cart => {
+      // Search filter
+      const matchesSearch = searchTerm === "" || 
+        cart.shopName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        cart.customerEmail.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      // Value range filter
+      const cartValue = cart.totalPrice;
+      const matchesMinValue = minValue === "" || cartValue >= parseFloat(minValue);
+      const matchesMaxValue = maxValue === "" || cartValue <= parseFloat(maxValue);
+      
+      return matchesSearch && matchesMinValue && matchesMaxValue;
+    });
+
+    // Score filter
+    if (scoreFilter !== "all") {
+      filtered = filtered.filter(cart => {
+        const score = calculateCartScore(cart);
+        if (scoreFilter === "excellent") return score >= 80;
+        if (scoreFilter === "good") return score >= 60 && score < 80;
+        if (scoreFilter === "fair") return score >= 40 && score < 60;
+        if (scoreFilter === "low") return score < 40;
+        return true;
+      });
+    }
+
+    // Sorting
+    return filtered.sort((a, b) => {
+      let aValue, bValue;
+      
+      switch (sortBy) {
+        case "score":
+          aValue = calculateCartScore(a);
+          bValue = calculateCartScore(b);
+          break;
+        case "value":
+          aValue = a.totalPrice;
+          bValue = b.totalPrice;
+          break;
+        case "time":
+          aValue = new Date(a.createdAt).getTime();
+          bValue = new Date(b.createdAt).getTime();
+          break;
+        case "items":
+          aValue = a.lineItems.length;
+          bValue = b.lineItems.length;
+          break;
+        default:
+          aValue = calculateCartScore(a);
+          bValue = calculateCartScore(b);
+      }
+      
+      return sortOrder === "asc" ? aValue - bValue : bValue - aValue;
+    });
+  }, [available, searchTerm, sortBy, sortOrder, minValue, maxValue, scoreFilter]);
+
+  // Calculate cart score function
+  const calculateCartScore = (cart: any) => {
+    const avgOrderValue = 250; // Mock average order value
+    const priceScore = Math.min(100, (cart.totalPrice / avgOrderValue) * 80);
+    const timeScore = Math.max(0, 100 - (Date.now() - new Date(cart.createdAt).getTime()) / (1000 * 60 * 120)); // 2 hours = 0 score
+    const itemScore = cart.lineItems.length === 1 ? 60 : cart.lineItems.length <= 3 ? 90 : cart.lineItems.length <= 6 ? 100 : 85;
+    const historyScore = 75; // Mock store conversion rate
+    const competitionScore = Math.max(0, 100 - (Math.random() * 5 * 20)); // Mock competition
+    
+    const weights = { priceScore: 0.25, timeScore: 0.30, itemScore: 0.20, historyScore: 0.15, competitionScore: 0.10 };
+    
+    return Math.round(
+      priceScore * weights.priceScore +
+      timeScore * weights.timeScore +
+      itemScore * weights.itemScore +
+      historyScore * weights.historyScore +
+      competitionScore * weights.competitionScore
+    );
+  };
+
+  const claimCart = (cartId: string) => {
+    setCheckouts(prev => prev.map(cart => 
+      cart.id === cartId 
+        ? { ...cart, claimedById: "u2", claimedAt: new Date().toISOString() }
+        : cart
+    ));
+    toast.success("Cart claimed successfully!");
+  };
 
   // Sample performance data
   const performanceData = [
@@ -71,73 +171,19 @@ export default function Marketplace() {
   };
 
   return (
-    <div className="overflow-hidden">
+    <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Marketplace</h1>
-          <p className="text-sm text-muted-foreground mt-1">Claim abandoned carts and recover sales</p>
+          <h1 className="text-2xl font-bold text-foreground">Cart Marketplace</h1>
+          <p className="text-sm text-muted-foreground mt-1">Claim and recover abandoned carts</p>
         </div>
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => setAutoRefresh(!autoRefresh)}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-              autoRefresh 
-                ? "bg-status-success/10 text-status-success" 
-                : "bg-muted text-muted-foreground"
-            }`}
-          >
-            <Zap className="h-3.5 w-3.5" />
-            {autoRefresh ? "Auto-refresh ON" : "Auto-refresh OFF"}
-          </button>
-          <StatusDot status="live" label={autoRefresh ? "Live • Auto-refreshing" : "Paused"} />
-        </div>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <div className="glass-card p-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-primary/10">
-              <ShoppingCart className="h-4 w-4 text-primary" />
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground">Available</p>
-              <p className="text-lg font-bold text-foreground">{available.length}</p>
-            </div>
-          </div>
-        </div>
-        <div className="glass-card p-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-status-success/10">
-              <TrendingUp className="h-4 w-4 text-status-success" />
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground">Total Value</p>
-              <p className="text-lg font-bold text-foreground">${totalValue.toFixed(0)}</p>
-            </div>
-          </div>
-        </div>
-        <div className="glass-card p-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-status-warning/10">
-              <Target className="h-4 w-4 text-status-warning" />
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground">Avg Value</p>
-              <p className="text-lg font-bold text-foreground">${avgValue.toFixed(0)}</p>
-            </div>
-          </div>
-        </div>
-        <div className="glass-card p-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-primary/10">
-              <Clock className="h-4 w-4 text-primary" />
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground">My Active</p>
-              <p className="text-lg font-bold text-foreground">{myCheckouts.length}</p>
-            </div>
-          </div>
+          <Badge variant="outline" className="text-sm">
+            {available.length} available
+          </Badge>
+          <Badge variant="outline" className="text-sm">
+            ${totalValue.toLocaleString()} total value
+          </Badge>
         </div>
       </div>
 
