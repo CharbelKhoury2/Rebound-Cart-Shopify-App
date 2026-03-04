@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
-import { mockCheckouts } from "@/data/mockData";
+import { CheckoutService } from "@/services/checkout";
+import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
 import { StatusDot } from "@/components/StatusDot";
 import { CartScoring, CartScoreComparison } from "@/components/rep/CartScoring";
 import { ShoppingCart, ExternalLink, Clock, TrendingUp, Target, Zap, Filter, SortAsc, SortDesc, BarChart3 } from "lucide-react";
@@ -10,36 +11,84 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import type { AbandonedCheckout } from "@prisma/client";
 
 export default function Marketplace() {
-  const [checkouts, setCheckouts] = useState(mockCheckouts);
+  const { user } = useSimpleAuth();
+  const [checkouts, setCheckouts] = useState<AbandonedCheckout[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortBy, setSortBy] = useState("score");
+  const [sortBy, setSortBy] = useState("createdAt");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [minValue, setMinValue] = useState("");
   const [maxValue, setMaxValue] = useState("");
   const [scoreFilter, setScoreFilter] = useState("all");
   const [showComparison, setShowComparison] = useState(false);
 
-  const available = checkouts.filter(
-    (c) => c.claimedById === null && c.status === "ABANDONED"
-  );
+  // Load available carts from database
+  const loadCarts = async () => {
+    try {
+      setIsLoading(true);
+      const availableCarts = await CheckoutService.getAvailableCarts();
+      setCheckouts(availableCarts);
+    } catch (error) {
+      console.error('Failed to load carts:', error);
+      toast.error('Failed to load available carts');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-  const myCheckouts = checkouts.filter((c) => c.claimedById === "u2");
-  const totalValue = available.reduce((sum, c) => sum + c.totalPrice, 0);
+  useEffect(() => {
+    loadCarts();
+  }, []);
+
+  // Auto-refresh from database
+  useEffect(() => {
+    if (!autoRefresh) return;
+    
+    const interval = setInterval(() => {
+      loadCarts();
+    }, 15000); // Every 15 seconds
+
+    return () => clearInterval(interval);
+  }, [autoRefresh]);
+
+  const available = checkouts; // Already filtered by service to show only available
+  const totalValue = available.reduce((sum, c) => sum + Number(c.totalPrice), 0);
   const avgValue = available.length > 0 ? totalValue / available.length : 0;
+
+  // Calculate cart score function
+  const calculateCartScore = (cart: AbandonedCheckout) => {
+    const avgOrderValue = 250; // Mock average order value
+    const priceScore = Math.min(100, (Number(cart.totalPrice) / avgOrderValue) * 80);
+    const timeScore = Math.max(0, 100 - (Date.now() - new Date(cart.createdAt).getTime()) / (1000 * 60 * 120)); // 2 hours = 0 score
+    const itemScore = 75; // Mock item score (would need lineItems in schema)
+    const historyScore = 75; // Mock store conversion rate
+    const competitionScore = Math.max(0, 100 - (Math.random() * 5 * 20)); // Mock competition
+    
+    const weights = { priceScore: 0.25, timeScore: 0.30, itemScore: 0.20, historyScore: 0.15, competitionScore: 0.10 };
+    
+    return Math.round(
+      priceScore * weights.priceScore +
+      timeScore * weights.timeScore +
+      itemScore * weights.itemScore +
+      historyScore * weights.historyScore +
+      competitionScore * weights.competitionScore
+    );
+  };
 
   // Enhanced filtering and sorting
   const filteredAndSortedCarts = useMemo(() => {
     let filtered = available.filter(cart => {
       // Search filter
       const matchesSearch = searchTerm === "" || 
-        cart.shopName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        cart.customerEmail.toLowerCase().includes(searchTerm.toLowerCase());
+        cart.shop.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (cart.email && cart.email.toLowerCase().includes(searchTerm.toLowerCase()));
       
       // Value range filter
-      const cartValue = cart.totalPrice;
+      const cartValue = Number(cart.totalPrice);
       const matchesMinValue = minValue === "" || cartValue >= parseFloat(minValue);
       const matchesMaxValue = maxValue === "" || cartValue <= parseFloat(maxValue);
       
@@ -68,98 +117,37 @@ export default function Marketplace() {
           bValue = calculateCartScore(b);
           break;
         case "value":
-          aValue = a.totalPrice;
-          bValue = b.totalPrice;
+          aValue = Number(a.totalPrice);
+          bValue = Number(b.totalPrice);
           break;
-        case "time":
+        case "createdAt":
           aValue = new Date(a.createdAt).getTime();
           bValue = new Date(b.createdAt).getTime();
           break;
-        case "items":
-          aValue = a.lineItems.length;
-          bValue = b.lineItems.length;
-          break;
         default:
-          aValue = calculateCartScore(a);
-          bValue = calculateCartScore(b);
+          aValue = new Date(a.createdAt).getTime();
+          bValue = new Date(b.createdAt).getTime();
       }
       
       return sortOrder === "asc" ? aValue - bValue : bValue - aValue;
     });
   }, [available, searchTerm, sortBy, sortOrder, minValue, maxValue, scoreFilter]);
 
-  // Calculate cart score function
-  const calculateCartScore = (cart: any) => {
-    const avgOrderValue = 250; // Mock average order value
-    const priceScore = Math.min(100, (cart.totalPrice / avgOrderValue) * 80);
-    const timeScore = Math.max(0, 100 - (Date.now() - new Date(cart.createdAt).getTime()) / (1000 * 60 * 120)); // 2 hours = 0 score
-    const itemScore = cart.lineItems.length === 1 ? 60 : cart.lineItems.length <= 3 ? 90 : cart.lineItems.length <= 6 ? 100 : 85;
-    const historyScore = 75; // Mock store conversion rate
-    const competitionScore = Math.max(0, 100 - (Math.random() * 5 * 20)); // Mock competition
-    
-    const weights = { priceScore: 0.25, timeScore: 0.30, itemScore: 0.20, historyScore: 0.15, competitionScore: 0.10 };
-    
-    return Math.round(
-      priceScore * weights.priceScore +
-      timeScore * weights.timeScore +
-      itemScore * weights.itemScore +
-      historyScore * weights.historyScore +
-      competitionScore * weights.competitionScore
-    );
-  };
+  const handleClaim = async (id: string) => {
+    if (!user) {
+      toast.error('Please log in to claim carts');
+      return;
+    }
 
-  const claimCart = (cartId: string) => {
-    setCheckouts(prev => prev.map(cart => 
-      cart.id === cartId 
-        ? { ...cart, claimedById: "u2", claimedAt: new Date().toISOString() }
-        : cart
-    ));
-    toast.success("Cart claimed successfully!");
-  };
-
-  // Sample performance data
-  const performanceData = [
-    { time: '12:00', available: 12, claimed: 3 },
-    { time: '14:00', available: 15, claimed: 5 },
-    { time: '16:00', available: 8, claimed: 7 },
-    { time: '18:00', available: 11, claimed: 4 },
-    { time: '20:00', available: 14, claimed: 6 },
-  ];
-
-  // Auto-refresh simulation
-  useEffect(() => {
-    if (!autoRefresh) return;
-    
-    const interval = setInterval(() => {
-      // Simulate new carts appearing
-      const newCart = {
-        id: `new-${Date.now()}`,
-        shopName: "New Store",
-        customerEmail: `customer${Date.now()}@email.com`,
-        totalPrice: Math.random() * 500 + 100,
-        currency: "USD",
-        checkoutUrl: "https://example.com/checkout",
-        status: "ABANDONED" as const,
-        claimedById: null,
-        claimedAt: null,
-        createdAt: new Date().toISOString(),
-        lineItems: [{ title: "Sample Product", quantity: 1, price: 150 }],
-      };
-      
-      setCheckouts(prev => [newCart, ...prev.slice(0, 19)]);
-      toast.info("New cart available!");
-    }, 15000); // Every 15 seconds
-
-    return () => clearInterval(interval);
-  }, [autoRefresh]);
-
-  const handleClaim = (id: string) => {
-    setCheckouts((prev) =>
-      prev.map((c) =>
-        c.id === id ? { ...c, claimedById: "u2", claimedAt: new Date().toISOString() } : c
-      )
-    );
-    toast.success("Cart claimed successfully! Check Active Recoveries.");
+    try {
+      await CheckoutService.claimCart(id, user.id);
+      toast.success("Cart claimed successfully! Check Active Recoveries.");
+      // Reload carts to update the list
+      loadCarts();
+    } catch (error: any) {
+      console.error('Claim failed:', error);
+      toast.error(error.message || 'Failed to claim cart');
+    }
   };
 
   const timeSince = (dateStr: string) => {
@@ -170,12 +158,23 @@ export default function Marketplace() {
     return `${Math.floor(hours / 24)}d ago`;
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <ShoppingCart className="h-10 w-10 mx-auto text-muted-foreground mb-3 animate-pulse" />
+          <p className="text-foreground font-medium">Loading available carts...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Cart Marketplace</h1>
-          <p className="text-sm text-muted-foreground mt-1">Claim and recover abandoned carts</p>
+          <h1 className="text-2xl font-bold text-foreground">Vetted Talent Network</h1>
+          <p className="text-sm text-muted-foreground mt-1">Claim and recover abandoned carts from our specialist network</p>
         </div>
         <div className="flex items-center gap-3">
           <Badge variant="outline" className="text-sm">
@@ -192,7 +191,13 @@ export default function Marketplace() {
         <h2 className="text-sm font-semibold text-foreground mb-4">Today's Activity</h2>
         <div className="w-full overflow-hidden">
           <ResponsiveContainer width="100%" height={150}>
-            <LineChart data={performanceData}>
+            <LineChart data={[
+              { time: '12:00', available: available.length, claimed: 0 },
+              { time: '14:00', available: available.length, claimed: 0 },
+              { time: '16:00', available: available.length, claimed: 0 },
+              { time: '18:00', available: available.length, claimed: 0 },
+              { time: '20:00', available: available.length, claimed: 0 },
+            ]}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
               <XAxis dataKey="time" stroke="var(--muted-foreground)" fontSize={12} />
               <YAxis stroke="var(--muted-foreground)" fontSize={12} />
@@ -214,46 +219,40 @@ export default function Marketplace() {
         <div className="glass-card p-12 text-center">
           <ShoppingCart className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
           <p className="text-foreground font-medium">No carts available</p>
-          <p className="text-sm text-muted-foreground mt-1">Check back soon — new carts appear in real-time</p>
+          <p className="text-sm text-muted-foreground mt-1">Check back soon — new carts appear in real-time from our specialist network</p>
         </div>
       ) : (
         <div className="grid gap-4">
-          {available
-            .sort((a, b) => b.totalPrice - a.totalPrice)
-            .map((checkout, i) => (
-              <div key={checkout.id} className="glass-card p-5 animate-fade-in-up" style={{ animationDelay: `${i * 60}ms` }}>
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-3 mb-2">
-                      <span className="text-lg font-bold text-foreground">
-                        ${checkout.totalPrice.toFixed(2)}
-                      </span>
-                      <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-secondary text-secondary-foreground">
-                        {checkout.currency}
-                      </span>
-                    </div>
-                    <p className="text-sm font-medium text-foreground">{checkout.shopName}</p>
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      {checkout.lineItems.map((item, j) => (
-                        <span key={j} className="text-xs text-muted-foreground bg-muted/50 px-2 py-1 rounded">
-                          {item.title} × {item.quantity}
-                        </span>
-                      ))}
-                    </div>
-                    <div className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground">
-                      <Clock className="h-3 w-3" />
-                      {timeSince(checkout.createdAt)}
-                    </div>
+          {filteredAndSortedCarts.map((checkout, i) => (
+            <div key={checkout.id} className="glass-card p-5 animate-fade-in-up" style={{ animationDelay: `${i * 60}ms` }}>
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-3 mb-2">
+                    <span className="text-lg font-bold text-foreground">
+                      ${Number(checkout.totalPrice).toFixed(2)}
+                    </span>
+                    <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-secondary text-secondary-foreground">
+                      {checkout.currency}
+                    </span>
                   </div>
-                  <button
-                    onClick={() => handleClaim(checkout.id)}
-                    className="shrink-0 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-all hover:shadow-lg hover:shadow-primary/20"
-                  >
-                    Claim Cart
-                  </button>
+                  <p className="text-sm font-medium text-foreground">{checkout.shop}</p>
+                  {checkout.email && (
+                    <p className="text-xs text-muted-foreground mt-1">{checkout.email}</p>
+                  )}
+                  <div className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <Clock className="h-3 w-3" />
+                    {timeSince(checkout.createdAt)}
+                  </div>
                 </div>
+                <button
+                  onClick={() => handleClaim(checkout.id)}
+                  className="shrink-0 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-all hover:shadow-lg hover:shadow-primary/20"
+                >
+                  Claim Cart
+                </button>
               </div>
-            ))}
+            </div>
+          ))}
         </div>
       )}
     </div>

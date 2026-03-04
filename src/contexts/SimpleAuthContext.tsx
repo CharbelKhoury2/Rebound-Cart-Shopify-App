@@ -1,11 +1,11 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import type { PlatformUser } from "@/types";
-import { mockUsers } from "@/data/mockData";
+import { AuthService } from "@/services/auth";
 
 interface SimpleAuthContextType {
   user: PlatformUser | null;
   isLoading: boolean;
-  login: (email: string, password: string) => boolean;
+  login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
 }
 
@@ -17,50 +17,87 @@ export function SimpleAuthProvider({ children }: { children: ReactNode }) {
 
   // Load user from sessionStorage on mount
   useEffect(() => {
-    const storedUser = sessionStorage.getItem('reboundcart_user');
-    if (storedUser) {
-      try {
-        const parsedUser = JSON.parse(storedUser);
-        setUser(parsedUser);
-        console.log('✅ Loaded user from session:', parsedUser.email, 'Role:', parsedUser.role);
-      } catch (error) {
-        console.error('Failed to parse stored user:', error);
-        sessionStorage.removeItem('reboundcart_user');
-      }
+    const storedToken = sessionStorage.getItem('reboundcart_token');
+    if (storedToken) {
+      validateAndLoadUser(storedToken);
+    } else {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   }, []);
 
-  const login = (email: string, _password: string) => {
+  const validateAndLoadUser = async (token: string) => {
+    try {
+      const { user: dbUser } = await AuthService.validateSession(token);
+      if (dbUser && dbUser.status === 'ACTIVE') {
+        setUser(dbUser);
+        console.log('✅ Loaded user from token:', dbUser.email, 'Role:', dbUser.role);
+      } else {
+        sessionStorage.removeItem('reboundcart_token');
+      }
+    } catch (error) {
+      console.error('Failed to validate token:', error);
+      sessionStorage.removeItem('reboundcart_token');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const login = async (email: string, password: string) => {
     console.log('🔐 SimpleAuth login attempt:', email);
     
-    const found = mockUsers.find(
-      (u) => u.email === email && u.status === "ACTIVE"
-    );
-    
-    if (found) {
-      setUser(found);
-      // Store in sessionStorage
-      sessionStorage.setItem('reboundcart_user', JSON.stringify(found));
-      console.log('✅ SimpleAuth login successful:', found.email, 'Role:', found.role);
-      return true;
+    try {
+      // For demo purposes, we'll create a simple login that finds or creates a user
+      // In production, this would validate against actual credentials
+      const { user: dbUser } = await AuthService.validateSession('demo');
+      
+      if (!dbUser) {
+        // Create a demo user if none exists
+        const newUser = await AuthService.createUser({
+          email,
+          firstName: email.split('@')[0],
+          role: email.includes('admin') ? 'PLATFORM_ADMIN' : 'SALES_REP',
+          tier: 'BRONZE'
+        });
+        
+        if (newUser.status === 'PENDING') {
+          // Auto-approve for demo
+          const approvedUser = await AuthService.approveUser(newUser.id);
+          setUser(approvedUser);
+          const token = AuthService.generateToken({
+            userId: approvedUser.id,
+            email: approvedUser.email,
+            role: approvedUser.role
+          });
+          sessionStorage.setItem('reboundcart_token', token);
+          console.log('✅ SimpleAuth login successful (new user):', approvedUser.email, 'Role:', approvedUser.role);
+          return true;
+        }
+      }
+      
+      if (dbUser && dbUser.status === 'ACTIVE') {
+        setUser(dbUser);
+        const token = AuthService.generateToken({
+          userId: dbUser.id,
+          email: dbUser.email,
+          role: dbUser.role
+        });
+        sessionStorage.setItem('reboundcart_token', token);
+        console.log('✅ SimpleAuth login successful:', dbUser.email, 'Role:', dbUser.role);
+        return true;
+      }
+      
+      console.log('❌ SimpleAuth login failed for:', email);
+      return false;
+    } catch (error) {
+      console.error('Login error:', error);
+      return false;
     }
-    
-    console.log('❌ SimpleAuth login failed for:', email);
-    return false;
   };
 
   const logout = () => {
     setUser(null);
-    sessionStorage.removeItem('reboundcart_user');
+    sessionStorage.removeItem('reboundcart_token');
     console.log('🔓 SimpleAuth logout successful');
-  };
-
-  // Force clear all session storage for debugging
-  const forceClearSession = () => {
-    sessionStorage.clear();
-    setUser(null);
-    console.log('🧹 Session storage cleared');
   };
 
   return (

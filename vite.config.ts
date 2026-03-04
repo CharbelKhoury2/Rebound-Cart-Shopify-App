@@ -10,6 +10,7 @@ export default defineConfig(({ mode }) => ({
     port: 8082, // Fixed port to match what's expected
     hmr: {
       overlay: false,
+      port: 8082, // Ensure HMR uses the same port
     },
   },
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
