@@ -371,14 +371,14 @@ export default function StoreManagement() {
         <div className="flex gap-2">
           <button
             onClick={() => loadStores()}
-            className="flex items-center gap-2 px-4 py-2 bg-gray text-white rounded-lg hover:bg-gray/90 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-accent transition-colors"
           >
             <RefreshCw className="h-4 w-4" />
             Refresh
           </button>
           <button
             onClick={handleExport}
-            className="flex items-center gap-2 px-4 py-2 bg-blue text-white rounded-lg hover:bg-blue/90 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
           >
             <Download className="h-4 w-4" />
             Export CSV
@@ -388,18 +388,50 @@ export default function StoreManagement() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white p-6 rounded-lg border border-gray">
+        <div className="glass-card p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray">Total Stores</p>
+              <p className="text-sm text-muted-foreground">Total Stores</p>
               <p className="text-2xl font-bold text-foreground">{stats.totalStores}</p>
             </div>
-            <div className="p-3 bg-blue/10 rounded-lg">
-              <Globe className="h-6 w-6 text-blue" />
+            <div className="p-3 bg-primary/10 rounded-lg">
+              <Globe className="h-6 w-6 text-primary" />
             </div>
           </div>
         </div>
-        {/* ... other stat cards */}
+        <div className="glass-card p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-muted-foreground">Active Stores</p>
+              <p className="text-2xl font-bold text-foreground">{stats.activeStores}</p>
+            </div>
+            <div className="p-3 bg-status-success/10 rounded-lg">
+              <CheckCircle className="h-6 w-6 text-status-success" />
+            </div>
+          </div>
+        </div>
+        <div className="glass-card p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-muted-foreground">Total Revenue</p>
+              <p className="text-2xl font-bold text-foreground">${stats.totalRevenue.toLocaleString()}</p>
+            </div>
+            <div className="p-3 bg-accent rounded-lg">
+              <DollarSign className="h-6 w-6 text-primary" />
+            </div>
+          </div>
+        </div>
+        <div className="glass-card p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-muted-foreground">Avg Recovery Rate</p>
+              <p className="text-2xl font-bold text-foreground">{stats.avgRecoveryRate.toFixed(1)}%</p>
+            </div>
+            <div className="p-3 bg-primary/10 rounded-lg">
+              <TrendingUp className="h-6 w-6 text-primary" />
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Store Health Summary */}
@@ -479,46 +511,17 @@ export default function StoreManagement() {
       )}
 
       {/* Filters and Search */}
-          </div>
-        </div>
-        
-        <div className="bg-white p-6 rounded-lg border border-gray">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray">Total Revenue</p>
-              <p className="text-2xl font-bold text-foreground">${stats.totalRevenue.toLocaleString()}</p>
-            </div>
-            <div className="p-3 bg-yellow/10 rounded-lg">
-              <DollarSign className="h-6 w-6 text-yellow" />
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-white p-6 rounded-lg border border-gray">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray">Avg Recovery Rate</p>
-              <p className="text-2xl font-bold text-foreground">{stats.avgRecoveryRate.toFixed(1)}%</p>
-            </div>
-            <div className="p-3 bg-purple/10 rounded-lg">
-              <TrendingUp className="h-6 w-6 text-purple" />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Filters */}
-      <div className="bg-white p-4 rounded-lg border border-gray">
+      <div className="glass-card p-4">
         <div className="flex flex-wrap gap-4 items-center">
           <div className="flex-1 min-w-64">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <input
                 type="text"
                 placeholder="Search stores..."
                 value={filters.search}
                 onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
-                className="w-full pl-10 pr-4 py-2 border border-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-blue/20"
+                className="w-full pl-10 pr-4 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
               />
             </div>
           </div>
@@ -526,7 +529,7 @@ export default function StoreManagement() {
           <select
             value={filters.status}
             onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
-            className="px-3 py-2 border border-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-blue/20"
+            className="px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
           >
             <option value="">All Status</option>
             <option value="ACTIVE">Active</option>
@@ -538,7 +541,7 @@ export default function StoreManagement() {
           <select
             value={filters.plan}
             onChange={(e) => setFilters(prev => ({ ...prev, plan: e.target.value }))}
-            className="px-3 py-2 border border-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-blue/20"
+            className="px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
           >
             <option value="">All Plans</option>
             <option value="FREE">Free</option>
@@ -550,7 +553,7 @@ export default function StoreManagement() {
           <select
             value={filters.country}
             onChange={(e) => setFilters(prev => ({ ...prev, country: e.target.value }))}
-            className="px-3 py-2 border border-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-blue/20"
+            className="px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
           >
             <option value="">All Countries</option>
             <option value="United States">United States</option>
@@ -563,27 +566,27 @@ export default function StoreManagement() {
 
       {/* Bulk Actions */}
       {selectedStores.length > 0 && (
-        <div className="bg-blue/10 border border-blue rounded-lg p-4">
+        <div className="bg-primary/10 border border-primary/30 rounded-lg p-4">
           <div className="flex items-center justify-between">
-            <span className="text-blue font-medium">
+            <span className="text-primary font-medium">
               {selectedStores.length} store{selectedStores.length > 1 ? 's' : ''} selected
             </span>
             <div className="flex gap-2">
               <button
                 onClick={() => handleBulkAction('Contact')}
-                className="px-3 py-1 bg-blue text-white rounded hover:bg-blue/90 transition-colors"
+                className="px-3 py-1 bg-primary text-primary-foreground rounded hover:bg-primary/90 transition-colors"
               >
                 <Mail className="h-4 w-4" />
               </button>
               <button
                 onClick={() => handleBulkAction('Suspend')}
-                className="px-3 py-1 bg-red text-white rounded hover:bg-red/90 transition-colors"
+                className="px-3 py-1 bg-destructive text-destructive-foreground rounded hover:bg-destructive/90 transition-colors"
               >
                 <AlertCircle className="h-4 w-4" />
               </button>
               <button
                 onClick={() => setSelectedStores([])}
-                className="px-3 py-1 bg-gray text-white rounded hover:bg-gray/90 transition-colors"
+                className="px-3 py-1 bg-muted text-muted-foreground rounded hover:bg-accent transition-colors"
               >
                 Cancel
               </button>
@@ -593,10 +596,10 @@ export default function StoreManagement() {
       )}
 
       {/* Stores Table */}
-      <div className="bg-white rounded-lg border border-gray overflow-hidden">
+      <div className="glass-card overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray">
+            <thead className="bg-muted">
               <tr>
                 <th className="px-4 py-3 text-left">
                   <input
@@ -612,19 +615,19 @@ export default function StoreManagement() {
                     className="rounded"
                   />
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray uppercase">Store</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray uppercase">Owner</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray uppercase">Plan</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray uppercase">Status</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray uppercase">Performance</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray uppercase">Revenue</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray uppercase">Installed</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray uppercase">Actions</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Store</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Owner</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Plan</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Status</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Performance</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Revenue</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Installed</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray">
+            <tbody className="divide-y divide-border">
               {filteredStores.map((store) => (
-                <tr key={store.id} className="hover:bg-gray/50 transition-colors">
+                <tr key={store.id} className="hover:bg-muted/50 transition-colors">
                   <td className="px-4 py-3">
                     <input
                       type="checkbox"

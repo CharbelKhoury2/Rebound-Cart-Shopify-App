@@ -31,7 +31,7 @@ export default function PortalLayout() {
   };
 
   return (
-    <div className="flex min-h-screen overflow-hidden">
+    <div className="flex min-h-screen">
       {/* Mobile Menu Button */}
       <div className="lg:hidden fixed top-4 left-4 z-50">
         <button
@@ -47,8 +47,8 @@ export default function PortalLayout() {
       {/* Sidebar */}
       <aside className={`
         fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-border bg-sidebar
-        transform transition-transform duration-200 ease-in-out overflow-hidden
-        lg:relative lg:translate-x-0 lg:sticky lg:top-0 lg:h-screen lg:overflow-hidden
+        transform transition-transform duration-200 ease-in-out
+        lg:translate-x-0
         ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
         {/* Header */}
@@ -129,8 +129,8 @@ export default function PortalLayout() {
       )}
 
       {/* Main content */}
-      <main className="flex-1 min-h-screen overflow-hidden">
-        <div className="p-4 lg:p-8 overflow-auto h-full">
+      <main className="flex-1 min-h-screen lg:ml-64">
+        <div className="p-4 lg:p-8">
           <Outlet />
         </div>
       </main>

@@ -57,20 +57,7 @@ export function CommunicationTemplates({
       type: 'email',
       category: 'initial',
       subject: 'Regarding your recent cart at {{storeName}}',
-      content: `Hi {{customerName}},
-
-I noticed you recently left some items in your cart at {{storeName}}. I'm here to help you complete your purchase and answer any questions you might have.
-
-Your cart total is ${{cartValue}}, and I'd be happy to assist with:
-- Product questions
-- Payment issues
-- Shipping information
-- Discount opportunities
-
-Would you like me to help you complete your order?
-
-Best regards,
-{{repName}}`,
+      content: 'Hi {{customerName}},\n\nI noticed you recently left some items in your cart at {{storeName}}. I\'m here to help you complete your purchase and answer any questions you might have.\n\nYour cart total is ${{cartValue}}, and I\'d be happy to assist with:\n- Product questions\n- Payment issues\n- Shipping information\n- Discount opportunities\n\nWould you like me to help you complete your order?\n\nBest regards,\n{{repName}}',
       variables: ['customerName', 'storeName', 'cartValue', 'discountedValue', 'repName'],
       successRate: 78,
       responseTime: 45,
@@ -81,7 +68,7 @@ Best regards,
       name: 'Follow-up SMS',
       type: 'sms',
       category: 'follow_up',
-      content: `Hi {{customerName}}! Following up on your {{storeName}} cart (${{cartValue}}). Can I help you complete your purchase? Reply YES for assistance!`,
+      content: 'Hi {{customerName}}! Following up on your {{storeName}} cart (${{cartValue}}). Can I help you complete your purchase? Reply YES for assistance!',
       variables: ['customerName', 'storeName', 'cartValue'],
       successRate: 65,
       responseTime: 15,
@@ -92,13 +79,7 @@ Best regards,
       name: 'Urgent Phone Script',
       type: 'phone_script',
       category: 'urgent',
-      content: `"Hi {{customerName}}, this is {{repName}} from {{storeName}}. I'm calling about your recent cart worth ${{cartValue}}. I noticed it was abandoned and wanted to make sure everything was okay. Is there anything I can help you with to complete your purchase?"
-
-Key points:
-- Verify customer information
-- Address any concerns
-- Offer assistance
-- Create urgency if appropriate`,
+      content: '"Hi {{customerName}}, this is {{repName}} from {{storeName}}. I\'m calling about your recent cart worth ${{cartValue}}. I noticed it was abandoned and wanted to make sure everything was okay. Is there anything I can help you with to complete your purchase?"\n\nKey points:\n- Verify customer information\n- Address any concerns\n- Offer assistance\n- Create urgency if appropriate',
       variables: ['customerName', 'repName', 'storeName', 'cartValue'],
       successRate: 82,
       responseTime: 5,
@@ -110,16 +91,7 @@ Key points:
       type: 'email',
       category: 'follow_up',
       subject: 'Special offer for your {{storeName}} cart',
-      content: `Hi {{customerName}},
-
-Great news! I can offer you a 10% discount on your {{storeName}} cart worth ${{cartValue}}.
-
-This special offer is available for the next 24 hours only. Your discounted total would be ${{discountedValue}}.
-
-Would you like me to apply this discount and help you complete your purchase?
-
-Best regards,
-{{repName}}`,
+      content: 'Hi {{customerName}},\n\nGreat news! I can offer you a 10% discount on your {{storeName}} cart worth ${{cartValue}}.\n\nThis special offer is available for the next 24 hours only. Your discounted total would be ${{discountedValue}}.\n\nWould you like me to apply this discount and help you complete your purchase?\n\nBest regards,\n{{repName}}',
       variables: ['customerName', 'storeName', 'cartValue', 'discountedValue', 'repName'],
       successRate: 71,
       responseTime: 30,
@@ -131,19 +103,7 @@ Best regards,
       type: 'email',
       category: 'success',
       subject: 'Thank you for your purchase!',
-      content: `Hi {{customerName}},
-
-Thank you for completing your purchase at {{storeName}}! Your order for ${{cartValue}} has been successfully processed.
-
-Your order details:
-- Order ID: {{orderId}}
-- Estimated delivery: {{deliveryDate}}
-- Tracking: {{trackingNumber}}
-
-If you have any questions about your order, please don't hesitate to reach out.
-
-Best regards,
-{{repName}}`,
+      content: 'Hi {{customerName}},\n\nThank you for completing your purchase at {{storeName}}! Your order for ${{cartValue}} has been successfully processed.\n\nYour order details:\n- Order ID: {{orderId}}\n- Estimated delivery: {{deliveryDate}}\n- Tracking: {{trackingNumber}}\n\nIf you have any questions about your order, please don\'t hesitate to reach out.\n\nBest regards,\n{{repName}}',
       variables: ['customerName', 'storeName', 'cartValue', 'orderId', 'deliveryDate', 'trackingNumber', 'repName'],
       successRate: 95,
       responseTime: 60,
