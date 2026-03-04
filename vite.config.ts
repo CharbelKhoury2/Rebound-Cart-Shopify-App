@@ -20,22 +20,17 @@ export default defineConfig(({ mode }) => ({
     },
   },
   define: {
-    // Polyfill Node.js globals for browser compatibility
-    global: 'globalThis',
-    process: {
-      env: {
-        NODE_ENV: mode || 'development',
-        JWT_SECRET: process.env.JWT_SECRET || '',
-        DATABASE_URL: process.env.DATABASE_URL || '',
-        DIRECT_URL: process.env.DIRECT_URL || '',
-        VITE_SHOPIFY_APP_URL: process.env.VITE_SHOPIFY_APP_URL || '',
-        VITE_API_KEY: process.env.VITE_API_KEY || '',
-        VITE_WS_URL: process.env.VITE_WS_URL || '',
-        VITE_DASHBOARD_URL: process.env.VITE_DASHBOARD_URL || '',
-        VITE_NODE_ENV: process.env.VITE_NODE_ENV || 'development',
-        VITE_API_URL: process.env.VITE_API_URL || 'http://localhost:3001/api'
-      }
-    },
+    // Fix "process is not defined" error by using string replacements
+    'process.env.NODE_ENV': JSON.stringify(mode || 'development'),
+    'process.env.VITE_API_URL': JSON.stringify(process.env.VITE_API_URL || 'http://localhost:3001/api'),
+    'process.env.JWT_SECRET': JSON.stringify(process.env.JWT_SECRET || ''),
+    'process.env.DATABASE_URL': JSON.stringify(process.env.DATABASE_URL || ''),
+    'process.env.DIRECT_URL': JSON.stringify(process.env.DIRECT_URL || ''),
+    'process.env.VITE_SHOPIFY_APP_URL': JSON.stringify(process.env.VITE_SHOPIFY_APP_URL || ''),
+    'process.env.VITE_API_KEY': JSON.stringify(process.env.VITE_API_KEY || ''),
+    'process.env.VITE_WS_URL': JSON.stringify(process.env.VITE_WS_URL || ''),
+    'process.env.VITE_DASHBOARD_URL': JSON.stringify(process.env.VITE_DASHBOARD_URL || ''),
+    'process.env.VITE_NODE_ENV': JSON.stringify(process.env.VITE_NODE_ENV || 'development')
   },
   optimizeDeps: {
     include: [],

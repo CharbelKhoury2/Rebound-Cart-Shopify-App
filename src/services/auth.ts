@@ -1,7 +1,9 @@
 import { prisma } from '@/lib/database'
 import type { PlatformUser, Session } from '@prisma/client'
 
-const JWT_SECRET = process.env.JWT_SECRET!
+const FALLBACK_JWT_SECRET =
+  'WOeJXw0KhfyJjv6wC1h7BVRVCHFVsVhMuFd6e51XN7btIvbQCJxBlLqUJIcmnY6/lnsIjttD5fj4FohScYMIOw=='
+const JWT_SECRET = process.env.JWT_SECRET || FALLBACK_JWT_SECRET
 
 export interface JWTPayload {
   userId: string

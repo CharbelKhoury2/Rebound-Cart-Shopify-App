@@ -14,7 +14,7 @@ export default function WorkingLoginPage() {
     window.location.reload();
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log('🔐 WorkingLoginPage login attempt:', { email, password, isLoading });
     
@@ -24,7 +24,7 @@ export default function WorkingLoginPage() {
       return;
     }
     
-    const success = login(email, password);
+    const success = await login(email, password);
     console.log('🔐 WorkingLoginPage login result:', success);
     
     if (!success) {
@@ -39,13 +39,13 @@ export default function WorkingLoginPage() {
     }
   };
 
-  const quickLogin = (userEmail: string) => {
+  const quickLogin = async (userEmail: string) => {
     console.log('⚡ Quick login initiated:', userEmail);
     setEmail(userEmail);
     setPassword("password123");
     
     // Immediate login
-    const success = login(userEmail, "password123");
+    const success = await login(userEmail, "password123");
     console.log('⚡ Quick login result:', success);
     
     if (!success) {

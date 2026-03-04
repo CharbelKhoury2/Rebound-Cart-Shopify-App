@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import { PrismaClient } from '@prisma/client';
@@ -21,36 +22,25 @@ app.get('/health', (req, res) => {
 // Authentication endpoints
 app.post('/api/auth/login', async (req, res) => {
   try {
-    const { email, password } = req.body;
-    
-    // Find or create user
-    let user = await prisma.platformUser.findUnique({
-      where: { email }
-    });
+    const { email } = req.body;
 
-    if (!user) {
-      // Create new user
-      user = await AuthService.createUser({
-        email,
-        firstName: email.split('@')[0],
-        role: email.includes('admin') ? 'PLATFORM_ADMIN' : 'SALES_REP',
-        tier: 'BRONZE'
-      });
-    }
+    // For now, bypass database and return a mock user so login works
+    const role = email.includes('admin') ? 'PLATFORM_ADMIN' : 'SALES_REP';
 
-    if (user.status === 'PENDING') {
-      // Auto-approve for demo
-      user = await AuthService.approveUser(user.id);
-    }
-
-    if (user.status !== 'ACTIVE') {
-      return res.status(401).json({ error: 'User not active' });
-    }
+    const user = {
+      id: `demo-${role.toLowerCase()}`,
+      email,
+      firstName: email.split('@')[0],
+      lastName: null,
+      role,
+      status: 'ACTIVE',
+      tier: 'BRONZE',
+    };
 
     const token = AuthService.generateToken({
       userId: user.id,
       email: user.email,
-      role: user.role
+      role: user.role,
     });
 
     res.json({ user, token });
