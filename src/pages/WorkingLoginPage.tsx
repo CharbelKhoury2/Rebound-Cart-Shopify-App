@@ -8,54 +8,19 @@ export default function WorkingLoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  // Debug: Show current state
-  console.log('🔍 WorkingLoginPage state:', { user: user?.email, isLoading, email, password });
-
-  const clearSession = () => {
-    sessionStorage.clear();
-    window.location.reload();
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('🔐 WorkingLoginPage login attempt:', { email, password, isLoading });
-
     if (!email || !password) {
-      console.log('❌ Missing email or password');
       alert("Please enter both email and password.");
       return;
     }
 
     const success = await login(email, password);
-    console.log('🔐 WorkingLoginPage login result:', success);
 
     if (!success) {
-      console.log('❌ Login failed for email:', email);
       alert("Invalid email or password. Please try again.");
     } else {
-      console.log('✅ Login successful, navigating...');
       const targetRole = email.includes('admin') ? 'PLATFORM_ADMIN' : 'SALES_REP';
-      navigate(targetRole === "PLATFORM_ADMIN" ? "/portal/admin" : "/portal/rep");
-    }
-  };
-
-
-
-  const quickLogin = async (userEmail: string) => {
-    console.log('⚡ Quick login initiated:', userEmail);
-    setEmail(userEmail);
-    setPassword("password123");
-
-    // Immediate login
-    const success = await login(userEmail, "password123");
-    console.log('⚡ Quick login result:', success);
-
-    if (!success) {
-      console.log('❌ Quick login failed for:', userEmail);
-      alert("Quick login failed. Make sure this email exists in PlatformUser table.");
-    } else {
-      console.log('✅ Quick login successful, navigating...');
-      const targetRole = userEmail.includes('admin') ? 'PLATFORM_ADMIN' : 'SALES_REP';
       navigate(targetRole === "PLATFORM_ADMIN" ? "/portal/admin" : "/portal/rep");
     }
   };
@@ -115,65 +80,19 @@ export default function WorkingLoginPage() {
             Sign In
           </button>
         </form>
-
-        <div className="mt-8 pt-6 border-t border-gray-200">
-          <p className="text-sm text-gray-600 text-center mb-4">Quick Login:</p>
-
-          <div className="space-y-2">
-            <button
-              onClick={() => quickLogin("admin@reboundcart.com")}
-              className="w-full text-left px-3 py-2 bg-gray-50 rounded hover:bg-gray-100 transition-colors"
-            >
-              <div className="flex justify-between items-center">
-                <span className="text-sm">Admin User</span>
-                <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">ADMIN</span>
-              </div>
-            </button>
-
-            <button
-              onClick={() => quickLogin("james@sales.com")}
-              className="w-full text-left px-3 py-2 bg-gray-50 rounded hover:bg-gray-100 transition-colors"
-            >
-              <div className="flex justify-between items-center">
-                <span className="text-sm">Sales Rep</span>
-                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">REP</span>
-              </div>
-            </button>
-
-            <button
-              onClick={() => quickLogin("maria@sales.com")}
-              className="w-full text-left px-3 py-2 bg-gray-50 rounded hover:bg-gray-100 transition-colors"
-            >
-              <div className="flex justify-between items-center">
-                <span className="text-sm">Sales Rep</span>
-                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">REP</span>
-              </div>
-            </button>
-          </div>
-        </div>
-        <div className="mt-6 p-4 bg-green-50 rounded-lg">
-          <p className="text-xs text-green-800 mb-2">
-            ✅ Working login system with simple authentication. Click quick login buttons for instant access.
+        <div className="mt-6 pt-4 border-t border-gray-200">
+          <p className="text-xs text-gray-600 text-center">
+            Demo emails for testing:
           </p>
-
-          {/* Debug Info */}
-          <div className="mt-2 p-2 bg-gray-100 rounded text-xs">
-            <p className="font-mono">Debug Info:</p>
-            <p className="font-mono">User: {user?.email || 'null'}</p>
-            <p className="font-mono">Loading: {isLoading ? 'Yes' : 'No'}</p>
-            <p className="font-mono">Email: {email || 'empty'}</p>
-            <p className="font-mono">Password: {password ? '***' : 'empty'}</p>
-          </div>
-
-          {/* Clear Session Button */}
-          <div className="mt-3">
-            <button
-              onClick={clearSession}
-              className="w-full text-xs bg-red-500 text-white py-2 rounded hover:bg-red-600 transition-colors"
-            >
-              🧹 Clear Session & Reload
-            </button>
-          </div>
+          <p className="mt-2 text-xs text-gray-800 text-center">
+            Admin: <span className="font-mono">admin@reboundcart.com</span>
+          </p>
+          <p className="text-xs text-gray-800 text-center">
+            Sales Rep: <span className="font-mono">james@sales.com</span>
+          </p>
+          <p className="mt-2 text-[11px] text-gray-500 text-center">
+            Any password will work for these demo accounts.
+          </p>
         </div>
       </div>
     </div>
