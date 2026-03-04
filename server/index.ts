@@ -24,29 +24,33 @@ app.post('/api/auth/login', async (req, res) => {
   try {
     const { email } = req.body;
 
-    // For now, bypass database and return a mock user so login works
-    const role = email.includes('admin') ? 'PLATFORM_ADMIN' : 'SALES_REP';
+    // Search for user in actual database table
+    const user = await prisma.platformUser.findUnique({
+      where: { email }
+    });
 
-    const user = {
-      id: `demo-${role.toLowerCase()}`,
-      email,
-      firstName: email.split('@')[0],
-      lastName: null,
-      role,
-      status: 'ACTIVE',
-      tier: 'BRONZE',
-    };
+    if (!user) {
+      console.log('❌ Login failed: Email not found in PlatformUser table:', email);
+      return res.status(401).json({ error: 'Email not found in our records.' });
+    }
 
+    if (user.status !== 'ACTIVE') {
+      console.log('⚠️ Login attempt for inactive user:', email);
+      return res.status(403).json({ error: 'Your account is not active. Please contact support.' });
+    }
+
+    // Success - generate token (any password accepted if user exists)
     const token = AuthService.generateToken({
       userId: user.id,
       email: user.email,
       role: user.role,
     });
 
+    console.log('✅ Successful login for:', email, 'Role:', user.role);
     res.json({ user, token });
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({ error: 'Login failed' });
+    res.status(500).json({ error: 'Login failed due to a server error.' });
   }
 });
 
@@ -54,7 +58,12 @@ app.post('/api/auth/validate', async (req, res) => {
   try {
     const { token } = req.body;
     const result = await AuthService.validateSession(token);
-    res.json(result);
+
+    if (result.user && result.user.status === 'ACTIVE') {
+      res.json(result);
+    } else {
+      res.status(401).json({ error: 'Invalid or inactive session' });
+    }
   } catch (error) {
     console.error('Token validation error:', error);
     res.status(401).json({ error: 'Invalid token' });
@@ -76,7 +85,7 @@ app.post('/api/checkouts/:id/claim', async (req, res) => {
   try {
     const { id } = req.params;
     const { repId } = req.body;
-    
+
     const claimedCart = await CheckoutService.claimCart(id, repId);
     res.json(claimedCart);
   } catch (error) {
@@ -93,6 +102,16 @@ app.get('/api/checkouts/claimed/:repId', async (req, res) => {
   } catch (error) {
     console.error('Get claimed checkouts error:', error);
     res.status(500).json({ error: 'Failed to get claimed checkouts' });
+  }
+});
+
+app.get('/api/checkouts/all', async (req, res) => {
+  try {
+    const checkouts = await CheckoutService.getAllCarts();
+    res.json(checkouts);
+  } catch (error) {
+    console.error('Get all checkouts error:', error);
+    res.status(500).json({ error: 'Failed to get checkouts' });
   }
 });
 
@@ -129,6 +148,27 @@ app.post('/api/commissions/:id/paid', async (req, res) => {
   }
 });
 
+// Statistics endpoints
+app.get('/api/stats/carts', async (req, res) => {
+  try {
+    const stats = await CheckoutService.getCartStats();
+    res.json(stats);
+  } catch (error) {
+    console.error('Get cart stats error:', error);
+    res.status(500).json({ error: 'Failed to get statistics' });
+  }
+});
+
+app.get('/api/stats/commissions', async (req, res) => {
+  try {
+    const stats = await CommissionService.getCommissionStats();
+    res.json(stats);
+  } catch (error) {
+    console.error('Get commission stats error:', error);
+    res.status(500).json({ error: 'Failed to get statistics' });
+  }
+});
+
 // User management endpoints
 app.get('/api/users', async (req, res) => {
   try {
@@ -160,27 +200,6 @@ app.post('/api/users/:id/reject', async (req, res) => {
   } catch (error) {
     console.error('Reject user error:', error);
     res.status(500).json({ error: 'Failed to reject user' });
-  }
-});
-
-// Statistics endpoints
-app.get('/api/stats/carts', async (req, res) => {
-  try {
-    const stats = await CheckoutService.getCartStats();
-    res.json(stats);
-  } catch (error) {
-    console.error('Get cart stats error:', error);
-    res.status(500).json({ error: 'Failed to get cart statistics' });
-  }
-});
-
-app.get('/api/stats/commissions', async (req, res) => {
-  try {
-    const stats = await CommissionService.getCommissionStats();
-    res.json(stats);
-  } catch (error) {
-    console.error('Get commission stats error:', error);
-    res.status(500).json({ error: 'Failed to get commission statistics' });
   }
 });
 

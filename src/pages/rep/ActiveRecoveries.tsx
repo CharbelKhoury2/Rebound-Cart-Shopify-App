@@ -1,9 +1,10 @@
-import { useState } from "react";
-import { mockCheckouts } from "@/data/mockData";
+import { useEffect, useState } from "react";
+import { apiService } from "@/services/api";
+import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
 import { StatusDot } from "@/components/StatusDot";
 import { CommunicationTemplates, CommunicationAnalytics } from "@/components/rep/CommunicationTemplates";
 import { CartScoring } from "@/components/rep/CartScoring";
-import { ExternalLink, Copy, CheckCircle, MessageSquare, Phone, Mail, TrendingUp, Clock, Target, BarChart3 } from "lucide-react";
+import { ExternalLink, Copy, CheckCircle, MessageSquare, Phone, Mail, TrendingUp, Clock, Target, BarChart3, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,17 +13,39 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
 
 export default function ActiveRecoveries() {
-  const myCheckouts = mockCheckouts.filter((c) => c.claimedById === "u2");
-  const active = myCheckouts.filter((c) => c.status === "ABANDONED");
-  const recovered = myCheckouts.filter((c) => c.status === "RECOVERED");
+  const { user } = useSimpleAuth();
+  const [checkouts, setCheckouts] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [selectedCart, setSelectedCart] = useState<any>(null);
   const [showCommunication, setShowCommunication] = useState(false);
 
+  const loadCarts = async () => {
+    if (!user) return;
+    try {
+      setIsLoading(true);
+      const data = await apiService.getRepClaimedCarts(user.id);
+      setCheckouts(data);
+    } catch (error) {
+      console.error("Failed to load claimed carts:", error);
+      toast.error("Failed to load your active recoveries");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadCarts();
+  }, [user]);
+
+  const active = checkouts.filter((c) => c.status === "ABANDONED");
+  const recovered = checkouts.filter((c) => c.status === "RECOVERED");
+
   // Analytics data
-  const recoveryRate = myCheckouts.length > 0 ? (recovered.length / myCheckouts.length) * 100 : 0;
-  const totalValueRecovered = recovered.reduce((sum, c) => sum + c.totalPrice, 0);
-  const avgRecoveryTime = 45; // Mock data in minutes
-  const totalActiveValue = active.reduce((sum, c) => sum + c.totalPrice, 0);
+  const recoveryRate = checkouts.length > 0 ? (recovered.length / checkouts.length) * 100 : 0;
+  const totalValueRecovered = recovered.reduce((sum, c) => sum + Number(c.totalPrice), 0);
+  const avgRecoveryTime = 45; // TODO: Calculate from real data once timestamps are more consistent
+  const totalActiveValue = active.reduce((sum, c) => sum + Number(c.totalPrice), 0);
 
   // Performance data for charts
   const weeklyPerformance = [
@@ -45,10 +68,21 @@ export default function ActiveRecoveries() {
 
   const handleSendMessage = (template: any, customMessage?: string) => {
     if (selectedCart) {
-      toast.success(`Message sent to ${selectedCart.customerEmail}`);
-      // In a real app, this would send the actual message
+      toast.success(`Message sent to ${selectedCart.email}`);
+      // Send message logic would go here
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <Clock className="h-10 w-10 mx-auto text-muted-foreground mb-3 animate-pulse" />
+          <p className="text-foreground font-medium">Loading your recoveries...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -57,6 +91,20 @@ export default function ActiveRecoveries() {
           <h1 className="text-2xl font-bold text-foreground">Active Recoveries</h1>
           <p className="text-muted-foreground">Manage and recover abandoned carts</p>
         </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={async () => {
+            setIsRefreshing(true);
+            await loadCarts();
+            setIsRefreshing(false);
+          }}
+          disabled={isRefreshing || isLoading}
+          className="flex items-center gap-2"
+        >
+          <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+          Refresh
+        </Button>
       </div>
 
       {/* Stats Cards */}
@@ -129,7 +177,7 @@ export default function ActiveRecoveries() {
               <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
               <XAxis dataKey="week" stroke="#9CA3AF" />
               <YAxis stroke="#9CA3AF" />
-              <Tooltip 
+              <Tooltip
                 contentStyle={{ backgroundColor: '#1F2937', border: '1px solid #374151' }}
                 labelStyle={{ color: '#F3F4F6' }}
               />
@@ -156,9 +204,9 @@ export default function ActiveRecoveries() {
                     <div className="flex items-center space-x-4">
                       <StatusDot status={cart.status === "ABANDONED" ? "live" : "recovered"} />
                       <div>
-                        <h3 className="font-semibold text-foreground">{cart.shopName}</h3>
-                        <p className="text-sm text-muted-foreground">{cart.customerEmail}</p>
-                        <p className="text-sm font-medium text-foreground">${cart.totalPrice.toFixed(2)}</p>
+                        <h3 className="font-semibold text-foreground">{cart.shop}</h3>
+                        <p className="text-sm text-muted-foreground">{cart.email}</p>
+                        <p className="text-sm font-medium text-foreground">${Number(cart.totalPrice).toFixed(2)}</p>
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
@@ -206,9 +254,9 @@ export default function ActiveRecoveries() {
                     <div className="flex items-center space-x-4">
                       <StatusDot status={cart.status === "ABANDONED" ? "live" : "recovered"} />
                       <div>
-                        <h3 className="font-semibold text-foreground">{cart.shopName}</h3>
-                        <p className="text-sm text-muted-foreground">{cart.customerEmail}</p>
-                        <p className="text-sm font-medium text-foreground">${cart.totalPrice.toFixed(2)}</p>
+                        <h3 className="font-semibold text-foreground">{cart.shop}</h3>
+                        <p className="text-sm text-muted-foreground">{cart.email}</p>
+                        <p className="text-sm font-medium text-foreground">${Number(cart.totalPrice).toFixed(2)}</p>
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
@@ -240,18 +288,18 @@ export default function ActiveRecoveries() {
             <div>
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-semibold text-foreground">
-                  Communication for {selectedCart.shopName}
+                  Communication for {selectedCart.shop}
                 </h2>
                 <Button variant="outline" onClick={() => setShowCommunication(false)}>
                   Back to List
                 </Button>
               </div>
-              
+
               <CommunicationTemplates
-                customerEmail={selectedCart.customerEmail}
-                customerName={selectedCart.customerEmail.split('@')[0]}
-                cartValue={selectedCart.totalPrice}
-                storeName={selectedCart.shopName}
+                customerEmail={selectedCart.email}
+                customerName={selectedCart.email ? selectedCart.email.split('@')[0] : 'Customer'}
+                cartValue={Number(selectedCart.totalPrice)}
+                storeName={selectedCart.shop}
                 onSendMessage={handleSendMessage}
               />
             </div>

@@ -1,20 +1,74 @@
-import { mockCommissions } from "@/data/mockData";
+import { useEffect, useState } from "react";
+import { apiService } from "@/services/api";
+import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
 import { MetricCard } from "@/components/MetricCard";
-import { DollarSign, TrendingUp, Clock, CheckCircle } from "lucide-react";
+import { StatusDot } from "@/components/StatusDot";
+import { DollarSign, TrendingUp, Clock, CheckCircle, Loader2, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 export default function Earnings() {
-  const myCommissions = mockCommissions.filter((c) => c.repId === "u2");
-  const totalEarned = myCommissions.reduce((s, c) => s + c.commissionAmount, 0);
-  const pending = myCommissions.filter((c) => c.status === "PENDING");
-  const paid = myCommissions.filter((c) => c.status === "PAID");
-  const pendingAmount = pending.reduce((s, c) => s + c.commissionAmount, 0);
-  const paidAmount = paid.reduce((s, c) => s + c.commissionAmount, 0);
+  const { user } = useSimpleAuth();
+  const [commissions, setCommissions] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const loadCommissions = async () => {
+    if (!user) return;
+    try {
+      setIsLoading(true);
+      const data = await apiService.getRepCommissions(user.id);
+      setCommissions(data);
+    } catch (error) {
+      console.error("Failed to load commissions:", error);
+      toast.error("Failed to load your earnings");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadCommissions();
+  }, [user]);
+
+  const totalEarned = commissions.reduce((s, c) => s + Number(c.commissionAmount), 0);
+  const pending = commissions.filter((c) => c.status === "PENDING");
+  const paid = commissions.filter((c) => c.status === "PAID");
+  const pendingAmount = pending.reduce((s, c) => s + Number(c.commissionAmount), 0);
+  const paidAmount = paid.reduce((s, c) => s + Number(c.commissionAmount), 0);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <Loader2 className="h-10 w-10 mx-auto text-primary animate-spin mb-3" />
+          <p className="text-foreground font-medium">Loading your earnings...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="overflow-hidden">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-foreground">Earnings</h1>
-        <p className="text-sm text-muted-foreground mt-1">Track your commissions and payouts</p>
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Earnings</h1>
+          <p className="text-sm text-muted-foreground mt-1">Track your commissions and payouts</p>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={async () => {
+            setIsRefreshing(true);
+            await loadCommissions();
+            setIsRefreshing(false);
+          }}
+          disabled={isRefreshing || isLoading}
+          className="flex items-center gap-2"
+        >
+          <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+          Refresh
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
@@ -39,23 +93,30 @@ export default function Earnings() {
               </tr>
             </thead>
             <tbody>
-              {myCommissions.map((c) => (
-                <tr key={c.id} className="border-b border-border/50 hover:bg-accent/30 transition-colors">
-                  <td className="px-5 py-3 font-medium text-foreground whitespace-nowrap">{c.shopName}</td>
-                  <td className="px-5 py-3 text-right text-muted-foreground whitespace-nowrap">${c.totalAmount.toFixed(2)}</td>
-                  <td className="px-5 py-3 text-right font-semibold text-foreground whitespace-nowrap">${c.commissionAmount.toFixed(2)}</td>
-                  <td className="px-5 py-3 text-center whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${
-                      c.status === "PAID"
+              {commissions.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="px-5 py-8 text-center text-muted-foreground">
+                    No commission records found.
+                  </td>
+                </tr>
+              ) : (
+                commissions.map((c) => (
+                  <tr key={c.id} className="border-b border-border/50 hover:bg-accent/30 transition-colors">
+                    <td className="px-5 py-3 font-medium text-foreground whitespace-nowrap">{c.shopName}</td>
+                    <td className="px-5 py-3 text-right text-muted-foreground whitespace-nowrap">${Number(c.totalAmount).toFixed(2)}</td>
+                    <td className="px-5 py-3 text-right font-semibold text-foreground whitespace-nowrap">${Number(c.commissionAmount).toFixed(2)}</td>
+                    <td className="px-5 py-3 text-center whitespace-nowrap">
+                      <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${c.status === "PAID"
                         ? "bg-status-success/10 text-status-success"
                         : "bg-status-pending/10 text-status-pending"
-                    }`}>
-                      {c.status}
-                    </span>
-                  </td>
-                  <td className="px-5 py-3 text-right text-muted-foreground whitespace-nowrap">{c.createdAt}</td>
-                </tr>
-              ))}
+                        }`}>
+                        {c.status}
+                      </span>
+                    </td>
+                    <td className="px-5 py-3 text-right text-muted-foreground whitespace-nowrap">{new Date(c.createdAt).toLocaleDateString()}</td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

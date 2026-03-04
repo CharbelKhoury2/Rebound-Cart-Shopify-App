@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
+import { useNavigate } from "react-router-dom";
 
 export default function WorkingLoginPage() {
   const { login, user, isLoading } = useSimpleAuth();
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -17,46 +19,44 @@ export default function WorkingLoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log('🔐 WorkingLoginPage login attempt:', { email, password, isLoading });
-    
+
     if (!email || !password) {
       console.log('❌ Missing email or password');
       alert("Please enter both email and password.");
       return;
     }
-    
+
     const success = await login(email, password);
     console.log('🔐 WorkingLoginPage login result:', success);
-    
+
     if (!success) {
       console.log('❌ Login failed for email:', email);
-      alert("Invalid credentials. Try admin@reboundcart.com or any sales rep email.");
+      alert("Invalid email or password. Please try again.");
     } else {
-      console.log('✅ Login successful, should redirect automatically...');
-      // Force a page reload to trigger navigation
-      setTimeout(() => {
-        window.location.href = email === "admin@reboundcart.com" ? "/portal/admin" : "/portal/rep";
-      }, 100);
+      console.log('✅ Login successful, navigating...');
+      const targetRole = email.includes('admin') ? 'PLATFORM_ADMIN' : 'SALES_REP';
+      navigate(targetRole === "PLATFORM_ADMIN" ? "/portal/admin" : "/portal/rep");
     }
   };
+
+
 
   const quickLogin = async (userEmail: string) => {
     console.log('⚡ Quick login initiated:', userEmail);
     setEmail(userEmail);
     setPassword("password123");
-    
+
     // Immediate login
     const success = await login(userEmail, "password123");
     console.log('⚡ Quick login result:', success);
-    
+
     if (!success) {
       console.log('❌ Quick login failed for:', userEmail);
-      alert("Quick login failed. Please try manual login.");
+      alert("Quick login failed. Make sure this email exists in PlatformUser table.");
     } else {
-      console.log('✅ Quick login successful, forcing redirect...');
-      // Force a page reload to trigger navigation
-      setTimeout(() => {
-        window.location.href = userEmail === "admin@reboundcart.com" ? "/portal/admin" : "/portal/rep";
-      }, 100);
+      console.log('✅ Quick login successful, navigating...');
+      const targetRole = userEmail.includes('admin') ? 'PLATFORM_ADMIN' : 'SALES_REP';
+      navigate(targetRole === "PLATFORM_ADMIN" ? "/portal/admin" : "/portal/rep");
     }
   };
 
@@ -118,7 +118,7 @@ export default function WorkingLoginPage() {
 
         <div className="mt-8 pt-6 border-t border-gray-200">
           <p className="text-sm text-gray-600 text-center mb-4">Quick Login:</p>
-          
+
           <div className="space-y-2">
             <button
               onClick={() => quickLogin("admin@reboundcart.com")}
@@ -151,12 +151,11 @@ export default function WorkingLoginPage() {
             </button>
           </div>
         </div>
-
         <div className="mt-6 p-4 bg-green-50 rounded-lg">
           <p className="text-xs text-green-800 mb-2">
             ✅ Working login system with simple authentication. Click quick login buttons for instant access.
           </p>
-          
+
           {/* Debug Info */}
           <div className="mt-2 p-2 bg-gray-100 rounded text-xs">
             <p className="font-mono">Debug Info:</p>

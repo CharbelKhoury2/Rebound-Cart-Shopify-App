@@ -66,9 +66,19 @@ class ApiService {
   // Checkout service methods
   async getAvailableCarts(): Promise<any[]> {
     const response = await this.request<any[]>('/checkouts/available');
-    
+
     if (!response.success || !response.data) {
       throw new Error(response.error || 'Failed to get available carts');
+    }
+
+    return response.data;
+  }
+
+  async getAllCarts(): Promise<any[]> {
+    const response = await this.request<any[]>('/checkouts/all');
+
+    if (!response.success || !response.data) {
+      throw new Error(response.error || 'Failed to get all carts');
     }
 
     return response.data;
@@ -89,7 +99,7 @@ class ApiService {
 
   async getRepClaimedCarts(repId: string): Promise<any[]> {
     const response = await this.request<any[]>(`/checkouts/claimed/${repId}`);
-    
+
     if (!response.success || !response.data) {
       throw new Error(response.error || 'Failed to get claimed carts');
     }
@@ -100,7 +110,7 @@ class ApiService {
   // Commission service methods
   async getRepCommissions(repId: string): Promise<any[]> {
     const response = await this.request<any[]>(`/commissions/rep/${repId}`);
-    
+
     if (!response.success || !response.data) {
       throw new Error(response.error || 'Failed to get commissions');
     }
@@ -110,7 +120,7 @@ class ApiService {
 
   async getAllCommissions(): Promise<any[]> {
     const response = await this.request<any[]>('/commissions/admin');
-    
+
     if (!response.success || !response.data) {
       throw new Error(response.error || 'Failed to get commissions');
     }
@@ -134,7 +144,7 @@ class ApiService {
   async getUsers(role?: string): Promise<any[]> {
     const params = role ? `?role=${role}` : '';
     const response = await this.request<any[]>(`/users${params}`);
-    
+
     if (!response.success || !response.data) {
       throw new Error(response.error || 'Failed to get users');
     }
@@ -169,7 +179,7 @@ class ApiService {
   // Statistics methods
   async getCartStats(): Promise<any> {
     const response = await this.request<any>('/stats/carts');
-    
+
     if (!response.success || !response.data) {
       throw new Error(response.error || 'Failed to get cart statistics');
     }
@@ -179,7 +189,7 @@ class ApiService {
 
   async getCommissionStats(): Promise<any> {
     const response = await this.request<any>('/stats/commissions');
-    
+
     if (!response.success || !response.data) {
       throw new Error(response.error || 'Failed to get commission statistics');
     }
@@ -190,7 +200,7 @@ class ApiService {
   // Health check
   async healthCheck(): Promise<{ status: string; timestamp: string }> {
     const response = await this.request<{ status: string; timestamp: string }>('/health');
-    
+
     if (!response.success || !response.data) {
       throw new Error(response.error || 'Health check failed');
     }

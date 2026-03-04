@@ -55,47 +55,7 @@ export default function EnhancedStoreManagement() {
     maxRecoveryRate: "",
   });
 
-  // Mock data for enhanced features
-  const mockStoreMetrics: Record<string, StoreMetrics> = {
-    "1": {
-      id: "m1",
-      storeId: "1",
-      date: "2026-03-03",
-      totalCheckouts: 1247,
-      recoveredCarts: 312,
-      revenue: 45680.50,
-      recoveryRate: 25.0,
-      avgOrderValue: 156.80,
-      topProducts: [
-        { id: "p1", title: "Designer Handbag", quantity: 89, revenue: 12450.00, currency: "USD" },
-        { id: "p2", title: "Silk Scarf Collection", quantity: 156, revenue: 8900.00, currency: "USD" },
-        { id: "p3", title: "Leather Wallet", quantity: 234, revenue: 5670.50, currency: "USD" }
-      ]
-    },
-    "2": {
-      id: "m2",
-      storeId: "2", 
-      date: "2026-03-03",
-      totalCheckouts: 856,
-      recoveredCarts: 171,
-      revenue: 28940.75,
-      recoveryRate: 20.0,
-      avgOrderValue: 134.20,
-      topProducts: [
-        { id: "p4", title: "Wireless Headphones", quantity: 67, revenue: 8900.00, currency: "CAD" },
-        { id: "p5", title: "Phone Cases", quantity: 234, revenue: 5670.75, currency: "CAD" },
-        { id: "p6", title: "Charging Cables", quantity: 456, revenue: 3420.00, currency: "CAD" }
-      ]
-    }
-  };
-
-  const mockTags: StoreTag[] = [
-    { id: "t1", name: "High Performer", color: "green", storeIds: ["1", "3"] },
-    { id: "t2", name: "Needs Attention", color: "yellow", storeIds: ["4"] },
-    { id: "t3", name: "New Store", color: "blue", storeIds: ["2"] },
-    { id: "t4", name: "Premium", color: "purple", storeIds: ["1", "5"] }
-  ];
-
+  // Live metrics will be loaded from the API
   useEffect(() => {
     loadStores();
     loadStoreMetrics();
@@ -105,187 +65,52 @@ export default function EnhancedStoreManagement() {
   const loadStores = async () => {
     try {
       setLoading(true);
-      // For now, use mock data - replace with real API call
-      const mockStores: ShopifyStore[] = [
-        {
-          id: "1",
-          shopDomain: "fashion-store.myshopify.com",
-          shopName: "Fashion Boutique",
-          email: "owner@fashion-store.com",
-          ownerName: "Sarah Johnson",
-          plan: "PRO",
-          status: "ACTIVE",
-          installedAt: "2024-01-15T10:30:00Z",
-          lastActiveAt: "2024-03-03T14:22:00Z",
-          totalCheckouts: 1247,
-          recoveredCarts: 312,
-          recoveryRate: 25.0,
-          totalRevenue: 45680.50,
-          commissionEarned: 1370.42,
-          appVersion: "2.1.3",
-          country: "United States",
-          currency: "USD",
-          timezone: "America/New_York",
-          features: {
-            emailNotifications: true,
-            smsNotifications: false,
-            advancedAnalytics: true,
-            customBranding: true,
-            apiAccess: true,
-          },
-          billing: {
-            nextBillingDate: "2024-04-15T00:00:00Z",
-            monthlyFee: 49.99,
-          },
-          support: {
-            ticketsOpen: 2,
-            lastSupportContact: "2024-03-01T16:30:00Z",
-          },
-        },
-        {
-          id: "2",
-          shopDomain: "tech-gadgets.myshopify.com",
-          shopName: "Tech Gadgets Plus",
-          email: "admin@tech-gadgets.com",
-          ownerName: "Mike Chen",
-          plan: "BASIC",
-          status: "ACTIVE",
-          installedAt: "2024-02-20T09:15:00Z",
-          lastActiveAt: "2024-03-03T11:45:00Z",
-          totalCheckouts: 856,
-          recoveredCarts: 171,
-          recoveryRate: 20.0,
-          totalRevenue: 28940.75,
-          commissionEarned: 578.82,
-          appVersion: "2.1.2",
-          country: "Canada",
-          currency: "CAD",
-          timezone: "America/Toronto",
-          features: {
-            emailNotifications: true,
-            smsNotifications: true,
-            advancedAnalytics: false,
-            customBranding: false,
-            apiAccess: false,
-          },
-          billing: {
-            nextBillingDate: "2024-04-20T00:00:00Z",
-            monthlyFee: 19.99,
-          },
-          support: {
-            ticketsOpen: 0,
-          },
-        },
-        {
-          id: "3",
-          shopDomain: "home-decor-shop.myshopify.com",
-          shopName: "Home Decor Shop",
-          email: "contact@home-decor-shop.com",
-          ownerName: "Emma Wilson",
-          plan: "FREE",
-          status: "INACTIVE",
-          installedAt: "2024-01-08T14:20:00Z",
-          lastActiveAt: "2024-02-28T16:10:00Z",
-          totalCheckouts: 234,
-          recoveredCarts: 35,
-          recoveryRate: 15.0,
-          totalRevenue: 8920.30,
-          commissionEarned: 0.00,
-          appVersion: "2.0.8",
-          country: "United Kingdom",
-          currency: "GBP",
-          timezone: "Europe/London",
-          features: {
-            emailNotifications: true,
-            smsNotifications: false,
-            advancedAnalytics: false,
-            customBranding: false,
-            apiAccess: false,
-          },
-          billing: {
-            nextBillingDate: "",
-            monthlyFee: 0,
-          },
-          support: {
-            ticketsOpen: 1,
-            lastSupportContact: "2024-03-02T10:15:00Z",
-          },
-        },
-        {
-          id: "4",
-          shopDomain: "sports-equipment.myshopify.com",
-          shopName: "Sports Equipment Pro",
-          email: "sales@sports-equipment.com",
-          ownerName: "David Martinez",
-          plan: "ENTERPRISE",
-          status: "SUSPENDED",
-          installedAt: "2023-12-10T11:00:00Z",
-          lastActiveAt: "2024-03-01T09:30:00Z",
-          totalCheckouts: 2156,
-          recoveredCarts: 647,
-          recoveryRate: 30.0,
-          totalRevenue: 98450.80,
-          commissionEarned: 2953.52,
-          appVersion: "2.1.3",
-          country: "Australia",
-          currency: "AUD",
-          timezone: "Australia/Sydney",
-          features: {
-            emailNotifications: true,
-            smsNotifications: true,
-            advancedAnalytics: true,
-            customBranding: true,
-            apiAccess: true,
-          },
-          billing: {
-            nextBillingDate: "2024-04-10T00:00:00Z",
-            monthlyFee: 149.99,
-          },
-          support: {
-            ticketsOpen: 3,
-            lastSupportContact: "2024-03-02T14:45:00Z",
-          },
-        },
-      ];
-      
-      setStores(mockStores);
-      console.log('📊 Loaded enhanced store data');
+      const response = await shopifyApi.getStores(filters);
+      if (response.success) {
+        setStores(response.data || []);
+        console.log('✅ Loaded real store data from API');
+      } else {
+        throw new Error(response.message || 'API error');
+      }
     } catch (error) {
       console.error('❌ Failed to load stores:', error);
-      toast.error('Failed to load stores');
+      toast.error('Failed to load stores from API. Showing empty state.');
+      setStores([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const loadStoreMetrics = () => {
-    setStoreMetrics(mockStoreMetrics);
+  const loadStoreMetrics = async () => {
+    // We could load actual metrics if we have a loop, but for now we'll start empty
+    setStoreMetrics({});
   };
 
-  const loadStoreTags = () => {
-    setStoreTags(mockTags);
+  const loadStoreTags = async () => {
+    // Tags should come from backend
+    setStoreTags([]);
   };
 
   const filteredStores = useMemo(() => {
     return stores.filter(store => {
-      const matchesSearch = !filters.search || 
+      const matchesSearch = !filters.search ||
         store.shopName.toLowerCase().includes(filters.search.toLowerCase()) ||
         store.shopDomain.toLowerCase().includes(filters.search.toLowerCase()) ||
         store.ownerName.toLowerCase().includes(filters.search.toLowerCase()) ||
         store.email.toLowerCase().includes(filters.search.toLowerCase());
-      
+
       const matchesStatus = !filters.status || store.status === filters.status;
       const matchesPlan = !filters.plan || store.plan === filters.plan;
       const matchesCountry = !filters.country || store.country === filters.country;
-      
+
       const matchesMinRevenue = !filters.minRevenue || store.totalRevenue >= parseFloat(filters.minRevenue);
       const matchesMaxRevenue = !filters.maxRevenue || store.totalRevenue <= parseFloat(filters.maxRevenue);
-      
+
       const matchesMinRecoveryRate = !filters.minRecoveryRate || store.recoveryRate >= parseFloat(filters.minRecoveryRate);
       const matchesMaxRecoveryRate = !filters.maxRecoveryRate || store.recoveryRate <= parseFloat(filters.maxRecoveryRate);
 
-      return matchesSearch && matchesStatus && matchesPlan && matchesCountry && 
-             matchesMinRevenue && matchesMaxRevenue && matchesMinRecoveryRate && matchesMaxRecoveryRate;
+      return matchesSearch && matchesStatus && matchesPlan && matchesCountry &&
+        matchesMinRevenue && matchesMaxRevenue && matchesMinRecoveryRate && matchesMaxRecoveryRate;
     });
   }, [stores, filters]);
 
@@ -435,7 +260,7 @@ export default function EnhancedStoreManagement() {
             </div>
           </div>
         </div>
-        
+
         <div className="bg-white p-4 rounded-lg border border-gray">
           <div className="flex items-center justify-between">
             <div>
@@ -447,7 +272,7 @@ export default function EnhancedStoreManagement() {
             </div>
           </div>
         </div>
-        
+
         <div className="bg-white p-4 rounded-lg border border-gray">
           <div className="flex items-center justify-between">
             <div>
@@ -459,7 +284,7 @@ export default function EnhancedStoreManagement() {
             </div>
           </div>
         </div>
-        
+
         <div className="bg-white p-4 rounded-lg border border-gray">
           <div className="flex items-center justify-between">
             <div>
@@ -471,7 +296,7 @@ export default function EnhancedStoreManagement() {
             </div>
           </div>
         </div>
-        
+
         <div className="bg-white p-4 rounded-lg border border-gray">
           <div className="flex items-center justify-between">
             <div>
@@ -483,7 +308,7 @@ export default function EnhancedStoreManagement() {
             </div>
           </div>
         </div>
-        
+
         <div className="bg-white p-4 rounded-lg border border-gray">
           <div className="flex items-center justify-between">
             <div>
@@ -509,7 +334,7 @@ export default function EnhancedStoreManagement() {
             {showAdvancedFilters ? 'Hide' : 'Show'} Advanced
           </button>
         </div>
-        
+
         {/* Basic Filters */}
         <div className="flex flex-wrap gap-4 items-center mb-4">
           <div className="flex-1 min-w-64">
@@ -524,7 +349,7 @@ export default function EnhancedStoreManagement() {
               />
             </div>
           </div>
-          
+
           <select
             value={filters.status}
             onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
@@ -536,7 +361,7 @@ export default function EnhancedStoreManagement() {
             <option value="SUSPENDED">Suspended</option>
             <option value="PENDING">Pending</option>
           </select>
-          
+
           <select
             value={filters.plan}
             onChange={(e) => setFilters(prev => ({ ...prev, plan: e.target.value }))}
@@ -548,7 +373,7 @@ export default function EnhancedStoreManagement() {
             <option value="PRO">Pro</option>
             <option value="ENTERPRISE">Enterprise</option>
           </select>
-          
+
           <select
             value={filters.country}
             onChange={(e) => setFilters(prev => ({ ...prev, country: e.target.value }))}
@@ -561,7 +386,7 @@ export default function EnhancedStoreManagement() {
             <option value="Australia">Australia</option>
           </select>
         </div>
-        
+
         {/* Advanced Filters */}
         {showAdvancedFilters && (
           <div className="border-t border-gray pt-4">
@@ -576,7 +401,7 @@ export default function EnhancedStoreManagement() {
                   className="w-full px-3 py-2 border border-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-blue/20"
                 />
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray mb-1">Max Revenue</label>
                 <input
@@ -587,7 +412,7 @@ export default function EnhancedStoreManagement() {
                   className="w-full px-3 py-2 border border-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-blue/20"
                 />
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray mb-1">Min Recovery Rate (%)</label>
                 <input
@@ -598,7 +423,7 @@ export default function EnhancedStoreManagement() {
                   className="w-full px-3 py-2 border border-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-blue/20"
                 />
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray mb-1">Max Recovery Rate (%)</label>
                 <input
@@ -795,7 +620,7 @@ export default function EnhancedStoreManagement() {
                       </div>
                     </td>
                   </tr>
-                  
+
                   {/* Expanded Row with Store Details */}
                   {expandedStores.has(store.id) && (
                     <tr className="bg-gray/20">
@@ -805,36 +630,33 @@ export default function EnhancedStoreManagement() {
                           <div className="flex border-b border-gray">
                             <button
                               onClick={() => setActiveTab('overview')}
-                              className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-                                activeTab === 'overview' 
-                                  ? 'border-blue text-blue' 
-                                  : 'border-transparent text-gray hover:text-foreground'
-                              }`}
+                              className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'overview'
+                                ? 'border-blue text-blue'
+                                : 'border-transparent text-gray hover:text-foreground'
+                                }`}
                             >
                               Overview
                             </button>
                             <button
                               onClick={() => setActiveTab('performance')}
-                              className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-                                activeTab === 'performance' 
-                                  ? 'border-blue text-blue' 
-                                  : 'border-transparent text-gray hover:text-foreground'
-                              }`}
+                              className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'performance'
+                                ? 'border-blue text-blue'
+                                : 'border-transparent text-gray hover:text-foreground'
+                                }`}
                             >
                               Performance
                             </button>
                             <button
                               onClick={() => setActiveTab('settings')}
-                              className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-                                activeTab === 'settings' 
-                                  ? 'border-blue text-blue' 
-                                  : 'border-transparent text-gray hover:text-foreground'
-                              }`}
+                              className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'settings'
+                                ? 'border-blue text-blue'
+                                : 'border-transparent text-gray hover:text-foreground'
+                                }`}
                             >
                               Settings
                             </button>
                           </div>
-                          
+
                           {/* Tab Content */}
                           {activeTab === 'overview' && (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -848,7 +670,7 @@ export default function EnhancedStoreManagement() {
                                   <div><span className="text-gray">App Version:</span> v{store.appVersion}</div>
                                 </div>
                               </div>
-                              
+
                               <div className="bg-white p-4 rounded-lg border border-gray">
                                 <h4 className="font-medium text-foreground mb-2">Billing Information</h4>
                                 <div className="space-y-2 text-sm">
@@ -857,7 +679,7 @@ export default function EnhancedStoreManagement() {
                                   <div><span className="text-gray">Next Billing:</span> {new Date(store.billing.nextBillingDate).toLocaleDateString()}</div>
                                 </div>
                               </div>
-                              
+
                               <div className="bg-white p-4 rounded-lg border border-gray">
                                 <h4 className="font-medium text-foreground mb-2">Support</h4>
                                 <div className="space-y-2 text-sm">
@@ -867,7 +689,7 @@ export default function EnhancedStoreManagement() {
                               </div>
                             </div>
                           )}
-                          
+
                           {activeTab === 'performance' && storeMetrics[store.id] && (
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                               <div className="bg-white p-4 rounded-lg border border-gray">
@@ -879,7 +701,7 @@ export default function EnhancedStoreManagement() {
                                   <div><span className="text-gray">Average Order Value:</span> {store.currency} {storeMetrics[store.id].avgOrderValue}</div>
                                 </div>
                               </div>
-                              
+
                               <div className="bg-white p-4 rounded-lg border border-gray">
                                 <h4 className="font-medium text-foreground mb-2">Top Products</h4>
                                 <div className="space-y-2">
@@ -893,7 +715,7 @@ export default function EnhancedStoreManagement() {
                               </div>
                             </div>
                           )}
-                          
+
                           {activeTab === 'settings' && (
                             <div className="bg-white p-4 rounded-lg border border-gray">
                               <h4 className="font-medium text-foreground mb-2">Store Features</h4>

@@ -1,5 +1,5 @@
-import { useState, useMemo } from "react";
-import { mockUsers } from "@/data/mockData";
+import { useState, useMemo, useEffect } from "react";
+import { apiService } from "@/services/api";
 import { TierBadge } from "@/components/TierBadge";
 import { PerformanceTracker, PerformanceLeaderboard } from "@/components/admin/PerformanceTracker";
 import { TrainingResources, TrainingSummary } from "@/components/admin/TrainingResources";
@@ -12,12 +12,30 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function RepManagement() {
-  const [users, setUsers] = useState<PlatformUser[]>(mockUsers.filter((u) => u.role === "SALES_REP"));
+  const [users, setUsers] = useState<PlatformUser[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<UserStatus | "ALL">("ALL");
   const [tierFilter, setTierFilter] = useState<Tier | "ALL">("ALL");
   const [selectedRep, setSelectedRep] = useState<string | null>(null);
   const [completedTrainingModules, setCompletedTrainingModules] = useState<Record<string, string[]>>({});
+
+  const loadUsers = async () => {
+    try {
+      setIsLoading(true);
+      const data = await apiService.getUsers("SALES_REP");
+      setUsers(data);
+    } catch (error) {
+      console.error("Failed to load reps:", error);
+      toast.error("Failed to load sales reps");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadUsers();
+  }, []);
 
   // Generate mock performance metrics for reps
   const generatePerformanceMetrics = (user: PlatformUser) => {
@@ -27,7 +45,7 @@ export default function RepManagement() {
       averageResponseTime: Math.floor(Math.random() * 15) + 5, // 5-20 minutes
       totalRevenue: Math.floor(Math.random() * 15000) + 3000, // $3k-$18k
       customerSatisfaction: Math.random() * 15 + 80, // 80-95%
-      weeklyProgress: Array.from({length: 4}, () => Math.floor(Math.random() * 10)),
+      weeklyProgress: Array.from({ length: 4 }, () => Math.floor(Math.random() * 10)),
       monthlyTarget: 10000,
       rank: Math.floor(Math.random() * 10) + 1,
       totalReps: users.length
@@ -45,14 +63,14 @@ export default function RepManagement() {
   // Filter users based on search and filters
   const filteredUsers = useMemo(() => {
     return users.filter((user) => {
-      const matchesSearch = searchTerm === "" || 
+      const matchesSearch = searchTerm === "" ||
         user.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         user.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         user.email.toLowerCase().includes(searchTerm.toLowerCase());
-      
+
       const matchesStatus = statusFilter === "ALL" || user.status === statusFilter;
       const matchesTier = tierFilter === "ALL" || user.tier === tierFilter;
-      
+
       return matchesSearch && matchesStatus && matchesTier;
     });
   }, [users, searchTerm, statusFilter, tierFilter]);
@@ -61,9 +79,19 @@ export default function RepManagement() {
   const activeUsers = filteredUsers.filter((u) => u.status === "ACTIVE");
   const inactiveUsers = filteredUsers.filter((u) => u.status === "INACTIVE");
 
-  const updateStatus = (id: string, status: UserStatus) => {
-    setUsers((prev) => prev.map((u) => (u.id === id ? { ...u, status } : u)));
-    toast.success(`Rep ${status === "ACTIVE" ? "approved" : "deactivated"}`);
+  const updateStatus = async (id: string, status: UserStatus) => {
+    try {
+      if (status === "ACTIVE") {
+        await apiService.approveUser(id);
+      } else if (status === "INACTIVE") {
+        await apiService.rejectUser(id);
+      }
+      setUsers((prev) => prev.map((u) => (u.id === id ? { ...u, status } : u)));
+      toast.success(`Rep ${status === "ACTIVE" ? "approved" : "deactivated"}`);
+    } catch (error) {
+      console.error("Failed to update status:", error);
+      toast.error("Failed to update rep status");
+    }
   };
 
   const updateTier = (id: string, tier: Tier) => {
@@ -79,15 +107,14 @@ export default function RepManagement() {
           <p className="text-xs text-muted-foreground">{user.email}</p>
         </div>
       </td>
-      <td className="px-5 py-3"><TierBadge tier={user.tier} /></td>
+      <td className="px-5 py-3"><TierBadge tier={user.tier as any} /></td>
       <td className="px-5 py-3">
-        <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${
-          user.status === "ACTIVE" ? "bg-status-success/10 text-status-success" :
+        <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${user.status === "ACTIVE" ? "bg-status-success/10 text-status-success" :
           user.status === "PENDING" ? "bg-status-pending/10 text-status-pending" :
-          "bg-muted text-muted-foreground"
-        }`}>{user.status}</span>
+            "bg-muted text-muted-foreground"
+          }`}>{user.status}</span>
       </td>
-      <td className="px-5 py-3 text-sm text-muted-foreground">{user.createdAt}</td>
+      <td className="px-5 py-3 text-sm text-muted-foreground">{new Date(user.createdAt).toLocaleDateString()}</td>
       <td className="px-5 py-3">
         <div className="flex items-center gap-2 justify-end">
           {user.status === "PENDING" && (

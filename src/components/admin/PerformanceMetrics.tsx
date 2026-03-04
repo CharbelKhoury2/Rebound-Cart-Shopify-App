@@ -3,12 +3,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { 
-  TrendingUp, 
-  TrendingDown, 
-  Target, 
-  Zap, 
-  Users, 
+import {
+  TrendingUp,
+  TrendingDown,
+  Target,
+  Zap,
+  Users,
   DollarSign,
   ShoppingCart,
   Activity,
@@ -39,8 +39,8 @@ interface PerformanceMetricsProps {
   onRefresh?: () => void;
 }
 
-export function PerformanceMetrics({ 
-  metrics, 
+export function PerformanceMetrics({
+  metrics,
   title = "Performance Metrics",
   showTrends = true,
   showTargets = true,
@@ -50,14 +50,6 @@ export function PerformanceMetrics({
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastUpdated, setLastUpdated] = useState(new Date());
 
-  useEffect(() => {
-    if (refreshInterval && onRefresh) {
-      const interval = setInterval(() => {
-        handleRefresh();
-      }, refreshInterval);
-      return () => clearInterval(interval);
-    }
-  }, [refreshInterval, onRefresh]);
 
   const handleRefresh = async () => {
     if (onRefresh) {
@@ -73,7 +65,7 @@ export function PerformanceMetrics({
 
   const formatValue = (value: number | string, format?: string, unit?: string) => {
     if (typeof value === 'string') return value;
-    
+
     let formattedValue: string;
     switch (format) {
       case 'currency':
@@ -85,13 +77,13 @@ export function PerformanceMetrics({
       default:
         formattedValue = value.toLocaleString();
     }
-    
+
     return unit ? `${formattedValue} ${unit}` : formattedValue;
   };
 
   const calculateTrend = (current: number, previous?: number) => {
     if (previous === undefined || previous === 0) return { trend: 'neutral', change: 0 };
-    
+
     const change = ((current - previous) / previous) * 100;
     return {
       trend: change > 0 ? 'up' : change < 0 ? 'down' : 'neutral',
@@ -161,12 +153,12 @@ export function PerformanceMetrics({
           </div>
         </div>
       </CardHeader>
-      
+
       <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {metrics.map((metric, index) => {
             const numericValue = typeof metric.value === 'number' ? metric.value : 0;
-            const trend = metric.previousValue !== undefined 
+            const trend = metric.previousValue !== undefined
               ? calculateTrend(numericValue, metric.previousValue)
               : { trend: metric.trend || 'neutral', change: 0 };
             const progress = calculateProgress(numericValue, metric.target);
@@ -213,8 +205,8 @@ export function PerformanceMetrics({
                         {progress.toFixed(0)}% of {formatValue(metric.target, metric.format, metric.unit)}
                       </span>
                     </div>
-                    <Progress 
-                      value={progress} 
+                    <Progress
+                      value={progress}
                       className="h-2"
                     />
                   </div>
@@ -228,8 +220,8 @@ export function PerformanceMetrics({
 
                 {metric.status && (
                   <div className="mt-2">
-                    <Badge 
-                      variant="outline" 
+                    <Badge
+                      variant="outline"
                       className={`text-xs ${getStatusColor(metric.status)}`}
                     >
                       {metric.status.charAt(0).toUpperCase() + metric.status.slice(1)}

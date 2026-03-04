@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { mockCommissions, mockUsers } from "@/data/mockData";
+import { useEffect, useState } from "react";
+import { apiService } from "@/services/api";
 import { MetricCard } from "@/components/MetricCard";
 import { CommissionCalculator } from "@/components/admin/CommissionCalculator";
 import { PayoutScheduler } from "@/components/admin/PayoutScheduler";
@@ -12,10 +12,28 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function AdminCommissions() {
-  const [commissions, setCommissions] = useState<Commission[]>(mockCommissions);
+  const [commissions, setCommissions] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCommissions, setSelectedCommissions] = useState<string[]>([]);
   const [calculatedCommissions, setCalculatedCommissions] = useState<any[]>([]);
+
+  const loadCommissions = async () => {
+    try {
+      setIsLoading(true);
+      const data = await apiService.getAllCommissions();
+      setCommissions(data);
+    } catch (error) {
+      console.error("Failed to load commissions:", error);
+      toast.error("Failed to load commissions data");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadCommissions();
+  }, []);
 
   // Mock data for new features
   const [payoutSchedules, setPayoutSchedules] = useState([
@@ -69,23 +87,19 @@ export default function AdminCommissions() {
     }
   ]);
 
-  // Generate mock orders for commission calculation
-  const mockOrders = mockUsers
-    .filter(user => user.role === 'SALES_REP')
-    .flatMap(user => 
-      Array.from({length: Math.floor(Math.random() * 5) + 1}, (_, i) => ({
-        id: `order-${user.id}-${i}`,
-        totalAmount: Math.floor(Math.random() * 2000) + 100,
-        repName: `${user.firstName} ${user.lastName}`,
-        repTier: user.tier,
-        productCategory: ['electronics', 'clothing', 'home', 'sports'][Math.floor(Math.random() * 4)]
-      }))
-    );
+  // We'll use real commissions to show potential payout data for calculation context
+  const mockOrders = commissions.map(c => ({
+    id: c.orderId,
+    totalAmount: Number(c.totalAmount),
+    repName: `${c.rep?.firstName} ${c.rep?.lastName}`,
+    repTier: c.rep?.tier,
+    productCategory: 'General'
+  }));
 
   const pending = commissions.filter((c) => c.status === "PENDING");
   const paid = commissions.filter((c) => c.status === "PAID");
-  const pendingTotal = pending.reduce((s, c) => s + c.commissionAmount, 0);
-  const paidTotal = paid.reduce((s, c) => s + c.commissionAmount, 0);
+  const pendingTotal = pending.reduce((s, c) => s + Number(c.commissionAmount), 0);
+  const paidTotal = paid.reduce((s, c) => s + Number(c.commissionAmount), 0);
 
   // Event handlers for new features
   const handleCalculationsComplete = (calculations: any[]) => {
@@ -100,8 +114,8 @@ export default function AdminCommissions() {
   };
 
   const handleToggleSchedule = (scheduleId: string) => {
-    setPayoutSchedules(prev => prev.map(schedule => 
-      schedule.id === scheduleId 
+    setPayoutSchedules(prev => prev.map(schedule =>
+      schedule.id === scheduleId
         ? { ...schedule, isActive: !schedule.isActive }
         : schedule
     ));
@@ -125,15 +139,17 @@ export default function AdminCommissions() {
 
   // Filter commissions based on search
   const filteredCommissions = commissions.filter((commission) => {
-    const matchesSearch = searchTerm === "" || 
-      commission.repName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      commission.shopName.toLowerCase().includes(searchTerm.toLowerCase());
+    const repName = `${commission.rep?.firstName || ''} ${commission.rep?.lastName || ''}`.toLowerCase();
+    const shopName = (commission.checkout?.shop || commission.shopName || '').toLowerCase();
+    const matchesSearch = searchTerm === "" ||
+      repName.includes(searchTerm.toLowerCase()) ||
+      shopName.includes(searchTerm.toLowerCase());
     return matchesSearch;
   });
 
   const toggleSelection = (id: string) => {
-    setSelectedCommissions(prev => 
-      prev.includes(id) 
+    setSelectedCommissions(prev =>
+      prev.includes(id)
         ? prev.filter(commissionId => commissionId !== id)
         : [...prev, id]
     );
@@ -143,7 +159,7 @@ export default function AdminCommissions() {
     const pendingIds = filteredCommissions
       .filter(c => c.status === "PENDING")
       .map(c => c.id);
-    
+
     if (selectedCommissions.length === pendingIds.length) {
       setSelectedCommissions([]);
     } else {
@@ -151,39 +167,50 @@ export default function AdminCommissions() {
     }
   };
 
-  const markSelectedAsPaid = () => {
+  const markSelectedAsPaid = async () => {
     if (selectedCommissions.length === 0) {
       toast.error("No commissions selected");
       return;
     }
 
-    setCommissions((prev) => 
-      prev.map((c) => 
-        selectedCommissions.includes(c.id) 
-          ? { ...c, status: "PAID" as const } 
-          : c
-      )
-    );
-    
-    toast.success(`${selectedCommissions.length} commission(s) marked as paid`);
-    setSelectedCommissions([]);
+    try {
+      await Promise.all(selectedCommissions.map(id => apiService.markCommissionPaid(id)));
+      setCommissions((prev) =>
+        prev.map((c) =>
+          selectedCommissions.includes(c.id)
+            ? { ...c, status: "PAID" as const }
+            : c
+        )
+      );
+      toast.success(`${selectedCommissions.length} commission(s) marked as paid`);
+      setSelectedCommissions([]);
+    } catch (error) {
+      console.error("Failed to pay commissions:", error);
+      toast.error("Failed to process some payments");
+      loadCommissions();
+    }
   };
 
-  const markAsPaid = (id: string) => {
-    setCommissions((prev) => prev.map((c) => (c.id === id ? { ...c, status: "PAID" as const } : c)));
-    toast.success("Commission marked as paid");
+  const markAsPaid = async (id: string) => {
+    try {
+      await apiService.markCommissionPaid(id);
+      setCommissions((prev) => prev.map((c) => (c.id === id ? { ...c, status: "PAID" as const } : c)));
+      toast.success("Commission marked as paid");
+    } catch (error) {
+      toast.error("Failed to mark as paid");
+    }
   };
 
   const exportToCSV = () => {
     const headers = ["Rep Name", "Shop", "Order Value", "Commission", "Platform Fee", "Status", "Date"];
     const csvData = filteredCommissions.map(c => [
-      c.repName,
-      c.shopName,
-      c.totalAmount.toFixed(2),
-      c.commissionAmount.toFixed(2),
-      c.platformFee.toFixed(2),
+      `${c.rep?.firstName} ${c.rep?.lastName}`,
+      c.checkout?.shop || c.shopName,
+      Number(c.totalAmount).toFixed(2),
+      Number(c.commissionAmount).toFixed(2),
+      Number(c.platformFee).toFixed(2),
       c.status,
-      c.createdAt
+      new Date(c.createdAt).toLocaleDateString()
     ]);
 
     const csvContent = [
@@ -198,7 +225,7 @@ export default function AdminCommissions() {
     a.download = `commissions-${new Date().toISOString().split("T")[0]}.csv`;
     a.click();
     window.URL.revokeObjectURL(url);
-    
+
     toast.success("Commission data exported successfully");
   };
 
@@ -286,15 +313,14 @@ export default function AdminCommissions() {
                       />
                     )}
                   </td>
-                  <td className="px-5 py-3 font-medium text-foreground">{c.repName}</td>
-                  <td className="px-5 py-3 text-muted-foreground">{c.shopName}</td>
-                  <td className="px-5 py-3 text-right text-muted-foreground">${c.totalAmount.toFixed(2)}</td>
-                  <td className="px-5 py-3 text-right font-semibold text-foreground">${c.commissionAmount.toFixed(2)}</td>
-                  <td className="px-5 py-3 text-right text-muted-foreground">${c.platformFee.toFixed(2)}</td>
+                  <td className="px-5 py-3 font-medium text-foreground">{c.rep?.firstName} {c.rep?.lastName}</td>
+                  <td className="px-5 py-3 text-muted-foreground">{c.checkout?.shop || c.shopName}</td>
+                  <td className="px-5 py-3 text-right text-muted-foreground">${Number(c.totalAmount).toFixed(2)}</td>
+                  <td className="px-5 py-3 text-right font-semibold text-foreground">${Number(c.commissionAmount).toFixed(2)}</td>
+                  <td className="px-5 py-3 text-right text-muted-foreground">${Number(c.platformFee).toFixed(2)}</td>
                   <td className="px-5 py-3 text-center">
-                    <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${
-                      c.status === "PAID" ? "bg-status-success/10 text-status-success" : "bg-status-pending/10 text-status-pending"
-                    }`}>{c.status}</span>
+                    <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${c.status === "PAID" ? "bg-status-success/10 text-status-success" : "bg-status-pending/10 text-status-pending"
+                      }`}>{c.status}</span>
                   </td>
                   <td className="px-5 py-3 text-right">
                     {c.status === "PENDING" && (

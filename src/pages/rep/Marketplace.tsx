@@ -3,7 +3,7 @@ import { apiService } from "@/services/api";
 import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
 import { StatusDot } from "@/components/StatusDot";
 import { CartScoring, CartScoreComparison } from "@/components/rep/CartScoring";
-import { ShoppingCart, ExternalLink, Clock, TrendingUp, Target, Zap, Filter, SortAsc, SortDesc, BarChart3 } from "lucide-react";
+import { ShoppingCart, ExternalLink, Clock, TrendingUp, Target, Zap, Filter, SortAsc, SortDesc, BarChart3, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { Button } from "@/components/ui/button";
@@ -30,7 +30,7 @@ export default function Marketplace() {
   const { user } = useSimpleAuth();
   const [checkouts, setCheckouts] = useState<Cart[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [autoRefresh, setAutoRefresh] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("createdAt");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
@@ -48,6 +48,7 @@ export default function Marketplace() {
     } catch (error) {
       console.error('Failed to load carts:', error);
       toast.error('Failed to load available carts');
+      setCheckouts([]);
     } finally {
       setIsLoading(false);
     }
@@ -57,32 +58,27 @@ export default function Marketplace() {
     loadCarts();
   }, []);
 
-  // Auto-refresh from API
-  useEffect(() => {
-    if (!autoRefresh) return;
-    
-    const interval = setInterval(() => {
-      loadCarts();
-    }, 15000); // Every 15 seconds
-
-    return () => clearInterval(interval);
-  }, [autoRefresh]);
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await loadCarts();
+    setIsRefreshing(false);
+  };
 
   const available = checkouts; // Already filtered by service to show only available
-  const totalValue = available.reduce((sum, c) => sum + c.totalPrice, 0);
+  const totalValue = available.reduce((sum, c) => sum + Number(c.totalPrice), 0);
   const avgValue = available.length > 0 ? totalValue / available.length : 0;
 
   // Calculate cart score function
   const calculateCartScore = (cart: Cart) => {
     const avgOrderValue = 250; // Mock average order value
-    const priceScore = Math.min(100, (cart.totalPrice / avgOrderValue) * 80);
+    const priceScore = Math.min(100, (Number(cart.totalPrice) / avgOrderValue) * 80);
     const timeScore = Math.max(0, 100 - (Date.now() - new Date(cart.createdAt).getTime()) / (1000 * 60 * 120)); // 2 hours = 0 score
     const itemScore = 75; // Mock item score (would need lineItems in schema)
     const historyScore = 75; // Mock store conversion rate
     const competitionScore = Math.max(0, 100 - (Math.random() * 5 * 20)); // Mock competition
-    
+
     const weights = { priceScore: 0.25, timeScore: 0.30, itemScore: 0.20, historyScore: 0.15, competitionScore: 0.10 };
-    
+
     return Math.round(
       priceScore * weights.priceScore +
       timeScore * weights.timeScore +
@@ -96,15 +92,15 @@ export default function Marketplace() {
   const filteredAndSortedCarts = useMemo(() => {
     let filtered = available.filter(cart => {
       // Search filter
-      const matchesSearch = searchTerm === "" || 
+      const matchesSearch = searchTerm === "" ||
         cart.shop.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (cart.email && cart.email.toLowerCase().includes(searchTerm.toLowerCase()));
-      
+
       // Value range filter
-      const cartValue = cart.totalPrice;
+      const cartValue = Number(cart.totalPrice);
       const matchesMinValue = minValue === "" || cartValue >= parseFloat(minValue);
       const matchesMaxValue = maxValue === "" || cartValue <= parseFloat(maxValue);
-      
+
       return matchesSearch && matchesMinValue && matchesMaxValue;
     });
 
@@ -123,15 +119,15 @@ export default function Marketplace() {
     // Sorting
     return filtered.sort((a, b) => {
       let aValue, bValue;
-      
+
       switch (sortBy) {
         case "score":
           aValue = calculateCartScore(a);
           bValue = calculateCartScore(b);
           break;
         case "value":
-          aValue = a.totalPrice;
-          bValue = b.totalPrice;
+          aValue = Number(a.totalPrice);
+          bValue = Number(b.totalPrice);
           break;
         case "createdAt":
           aValue = new Date(a.createdAt).getTime();
@@ -141,7 +137,7 @@ export default function Marketplace() {
           aValue = new Date(a.createdAt).getTime();
           bValue = new Date(b.createdAt).getTime();
       }
-      
+
       return sortOrder === "asc" ? aValue - bValue : bValue - aValue;
     });
   }, [available, searchTerm, sortBy, sortOrder, minValue, maxValue, scoreFilter]);
@@ -196,6 +192,16 @@ export default function Marketplace() {
           <Badge variant="outline" className="text-sm">
             ${totalValue.toLocaleString()} total value
           </Badge>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleRefresh}
+            disabled={isRefreshing || isLoading}
+            className="flex items-center gap-2"
+          >
+            <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
         </div>
       </div>
 
@@ -214,9 +220,9 @@ export default function Marketplace() {
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
               <XAxis dataKey="time" stroke="var(--muted-foreground)" fontSize={12} />
               <YAxis stroke="var(--muted-foreground)" fontSize={12} />
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: 'var(--card)', 
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: 'var(--card)',
                   border: '1px solid var(--border)',
                   borderRadius: '8px'
                 }}
@@ -242,7 +248,7 @@ export default function Marketplace() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-3 mb-2">
                     <span className="text-lg font-bold text-foreground">
-                      ${checkout.totalPrice.toFixed(2)}
+                      ${Number(checkout.totalPrice).toFixed(2)}
                     </span>
                     <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-secondary text-secondary-foreground">
                       {checkout.currency}

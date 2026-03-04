@@ -1,16 +1,18 @@
 import { useState } from "react";
-import { useTabAuth } from "@/contexts/TabAuthContext";
+import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
+import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff, Users, Globe, Shield, ArrowRight } from "lucide-react";
 
 export default function EnhancedLoginPage() {
-  const { login, tabId, isLoading } = useTabAuth();
+  const { login, user, isLoading } = useSimpleAuth();
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Show loading while tab ID is being generated
-  if (isLoading || !tabId) {
+  // Show loading while state is being initialized
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue to-purple flex items-center justify-center">
         <div className="text-center">
@@ -24,38 +26,29 @@ export default function EnhancedLoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
-    // Simulate API call delay
-    setTimeout(() => {
-      const success = login(email, password);
-      if (!success) {
-        alert("Invalid credentials. Try admin@reboundcart.com or any sales rep email.");
+
+    try {
+      const success = await login(email, password);
+      if (success) {
+        const targetRole = email.includes('admin') ? 'PLATFORM_ADMIN' : 'SALES_REP';
+        navigate(targetRole === "PLATFORM_ADMIN" ? "/portal/admin" : "/portal/rep");
+      } else {
+        alert("Invalid email address. Please check and try again.");
       }
+    } catch (error) {
+      console.error('Login error:', error);
+      alert("An error occurred during login. Please try again.");
+    } finally {
       setIsSubmitting(false);
-    }, 500);
+    }
   };
 
-  const quickLogin = (email: string) => {
-    setEmail(email);
-    setPassword("password123");
-  };
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue to-purple flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        {/* Tab Info */}
-        <div className="bg-white/10 backdrop-blur-md rounded-lg p-3 mb-6 border border-white/20">
-          <div className="flex items-center justify-between text-white text-sm">
-            <div className="flex items-center gap-2">
-              <Globe className="h-4 w-4" />
-              <span>Tab ID: {tabId.slice(-8)}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Shield className="h-4 w-4" />
-              <span>Isolated Session</span>
-            </div>
-          </div>
-        </div>
+
 
         {/* Login Card */}
         <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
@@ -127,64 +120,9 @@ export default function EnhancedLoginPage() {
               </button>
             </form>
 
-            {/* Quick Login Options */}
-            <div className="mt-8 pt-6 border-t border-gray">
-              <p className="text-sm text-gray text-center mb-4">Quick Login (Demo Accounts)</p>
-              
-              <div className="space-y-2">
-                <button
-                  onClick={() => quickLogin("admin@reboundcart.com")}
-                  className="w-full text-left px-4 py-3 bg-gray/50 rounded-lg hover:bg-gray/100 transition-colors group"
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-medium text-gray">Admin User</div>
-                      <div className="text-sm text-gray">admin@reboundcart.com</div>
-                    </div>
-                    <div className="px-2 py-1 bg-purple text-white text-xs rounded-full">ADMIN</div>
-                  </div>
-                </button>
 
-                <button
-                  onClick={() => quickLogin("james@sales.com")}
-                  className="w-full text-left px-4 py-3 bg-gray/50 rounded-lg hover:bg-gray/100 transition-colors group"
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-medium text-gray">Sales Rep</div>
-                      <div className="text-sm text-gray">james@sales.com</div>
-                    </div>
-                    <div className="px-2 py-1 bg-blue text-white text-xs rounded-full">REP</div>
-                  </div>
-                </button>
 
-                <button
-                  onClick={() => quickLogin("maria@sales.com")}
-                  className="w-full text-left px-4 py-3 bg-gray/50 rounded-lg hover:bg-gray/100 transition-colors group"
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-medium text-gray">Sales Rep</div>
-                      <div className="text-sm text-gray">maria@sales.com</div>
-                    </div>
-                    <div className="px-2 py-1 bg-blue text-white text-xs rounded-full">REP</div>
-                  </div>
-                </button>
-              </div>
-            </div>
 
-            {/* Multi-Tab Info */}
-            <div className="mt-6 p-4 bg-blue/10 rounded-lg">
-              <div className="flex items-start gap-3">
-                <Globe className="h-5 w-5 text-blue mt-0.5" />
-                <div className="text-sm">
-                  <p className="font-medium text-blue mb-1">Multi-Tab Testing</p>
-                  <p className="text-blue/80">
-                    Each tab maintains its own login session. Open multiple tabs to test different user roles simultaneously.
-                  </p>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </div>
