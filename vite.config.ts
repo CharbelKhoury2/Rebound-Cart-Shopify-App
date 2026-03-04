@@ -19,4 +19,24 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  define: {
+    // Polyfill Node.js globals for browser compatibility
+    global: 'globalThis',
+    process: {
+      env: {
+        NODE_ENV: mode || 'development',
+        JWT_SECRET: process.env.JWT_SECRET || '',
+        DATABASE_URL: process.env.DATABASE_URL || '',
+        DIRECT_URL: process.env.DIRECT_URL || '',
+        VITE_SHOPIFY_APP_URL: process.env.VITE_SHOPIFY_APP_URL || '',
+        VITE_API_KEY: process.env.VITE_API_KEY || '',
+        VITE_WS_URL: process.env.VITE_WS_URL || '',
+        VITE_DASHBOARD_URL: process.env.VITE_DASHBOARD_URL || '',
+        VITE_NODE_ENV: process.env.VITE_NODE_ENV || 'development'
+      }
+    },
+  },
+  optimizeDeps: {
+    include: [],
+  },
 }));

@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import type { PlatformUser } from "@/types";
-import { AuthService } from "@/services/auth";
+import { apiService } from "@/services/api";
 
 interface SimpleAuthContextType {
   user: PlatformUser | null;
@@ -27,10 +27,10 @@ export function SimpleAuthProvider({ children }: { children: ReactNode }) {
 
   const validateAndLoadUser = async (token: string) => {
     try {
-      const { user: dbUser } = await AuthService.validateSession(token);
-      if (dbUser && dbUser.status === 'ACTIVE') {
-        setUser(dbUser);
-        console.log('✅ Loaded user from token:', dbUser.email, 'Role:', dbUser.role);
+      const { user: apiUser } = await apiService.validateToken(token);
+      if (apiUser && apiUser.status === 'ACTIVE') {
+        setUser(apiUser);
+        console.log('✅ Loaded user from token:', apiUser.email, 'Role:', apiUser.role);
       } else {
         sessionStorage.removeItem('reboundcart_token');
       }
@@ -46,43 +46,12 @@ export function SimpleAuthProvider({ children }: { children: ReactNode }) {
     console.log('🔐 SimpleAuth login attempt:', email);
     
     try {
-      // For demo purposes, we'll create a simple login that finds or creates a user
-      // In production, this would validate against actual credentials
-      const { user: dbUser } = await AuthService.validateSession('demo');
+      const { user: apiUser, token } = await apiService.login(email, password);
       
-      if (!dbUser) {
-        // Create a demo user if none exists
-        const newUser = await AuthService.createUser({
-          email,
-          firstName: email.split('@')[0],
-          role: email.includes('admin') ? 'PLATFORM_ADMIN' : 'SALES_REP',
-          tier: 'BRONZE'
-        });
-        
-        if (newUser.status === 'PENDING') {
-          // Auto-approve for demo
-          const approvedUser = await AuthService.approveUser(newUser.id);
-          setUser(approvedUser);
-          const token = AuthService.generateToken({
-            userId: approvedUser.id,
-            email: approvedUser.email,
-            role: approvedUser.role
-          });
-          sessionStorage.setItem('reboundcart_token', token);
-          console.log('✅ SimpleAuth login successful (new user):', approvedUser.email, 'Role:', approvedUser.role);
-          return true;
-        }
-      }
-      
-      if (dbUser && dbUser.status === 'ACTIVE') {
-        setUser(dbUser);
-        const token = AuthService.generateToken({
-          userId: dbUser.id,
-          email: dbUser.email,
-          role: dbUser.role
-        });
+      if (apiUser && apiUser.status === 'ACTIVE') {
+        setUser(apiUser);
         sessionStorage.setItem('reboundcart_token', token);
-        console.log('✅ SimpleAuth login successful:', dbUser.email, 'Role:', dbUser.role);
+        console.log('✅ SimpleAuth login successful:', apiUser.email, 'Role:', apiUser.role);
         return true;
       }
       
