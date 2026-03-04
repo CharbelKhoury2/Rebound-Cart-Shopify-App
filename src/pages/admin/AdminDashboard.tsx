@@ -82,10 +82,10 @@ export default function AdminDashboard() {
   ];
 
   const tierDistribution = [
-    { name: 'Bronze', value: mockUsers.filter(u => u.tier === 'BRONZE').length, color: '#b87333' },
-    { name: 'Silver', value: mockUsers.filter(u => u.tier === 'SILVER').length, color: '#c0c0c0' },
-    { name: 'Gold', value: mockUsers.filter(u => u.tier === 'GOLD').length, color: '#ffd700' },
-    { name: 'Platinum', value: mockUsers.filter(u => u.tier === 'PLATINUM').length, color: '#e5e4e2' },
+    { name: 'Bronze', value: mockUsers.filter(u => u.tier === 'BRONZE').length, color: '#f97316' },
+    { name: 'Silver', value: mockUsers.filter(u => u.tier === 'SILVER').length, color: '#6366f1' },
+    { name: 'Gold', value: mockUsers.filter(u => u.tier === 'GOLD').length, color: '#eab308' },
+    { name: 'Platinum', value: mockUsers.filter(u => u.tier === 'PLATINUM').length, color: '#06b6d4' },
   ];
 
   const performanceData = [

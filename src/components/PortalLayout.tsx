@@ -48,7 +48,7 @@ export default function PortalLayout() {
       <aside className={`
         fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-border bg-sidebar
         transform transition-transform duration-200 ease-in-out overflow-hidden
-        lg:relative lg:translate-x-0 lg:sticky lg:top-0 lg:h-screen lg:overflow-hidden
+        lg:sticky lg:top-0 lg:h-screen lg:translate-x-0
         ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
         {/* Header */}
