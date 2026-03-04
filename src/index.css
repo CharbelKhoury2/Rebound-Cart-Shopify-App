@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Lexend+Deca:wght@100;200;300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap');
 
 @import './colors.css';
 
@@ -54,49 +54,49 @@
   }
 
   .dark {
-    /* Professional Dark Mode Colors - Clean & Modern */
-    --background: 24 24 27%;
-    --foreground: 248 248 252%;
-    --card: 30 30 31%;
-    --card-foreground: 248 248 252%;
-    --popover: 30 30 31%;
-    --popover-foreground: 248 248 252%;
-    --primary: 99 102 241%;
-    --primary-foreground: 248 248 252%;
-    --secondary: 39 39 42%;
-    --secondary-foreground: 248 248 252%;
-    --muted: 39 39 42%;
-    --muted-foreground: 230 230 230%;
-    --accent: 39 39 42%;
-    --accent-foreground: 248 248 252%;
-    --destructive: 248 58 58%;
-    --destructive-foreground: 248 248 252%;
-    --border: 39 39 42%;
-    --input: 39 39 42%;
-    --ring: 99 102 241%;
+    /* Professional Dark Mode Colors - HSL */
+    --background: 240 6% 10%;
+    --foreground: 240 6% 97%;
+    --card: 240 5% 13%;
+    --card-foreground: 240 6% 97%;
+    --popover: 240 5% 13%;
+    --popover-foreground: 240 6% 97%;
+    --primary: 238 84% 67%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 4% 18%;
+    --secondary-foreground: 240 6% 97%;
+    --muted: 240 4% 18%;
+    --muted-foreground: 240 5% 65%;
+    --accent: 240 4% 18%;
+    --accent-foreground: 240 6% 97%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 240 4% 20%;
+    --input: 240 4% 20%;
+    --ring: 238 84% 67%;
     
-    /* Status Colors - Professional Dark Mode */
-    --status-success: 34 197 94%;
-    --status-warning: 251 146 60%;
-    --status-error: 248 58 58%;
-    --status-pending: 251 146 60%;
-    --status-live: 99 102 241%;
+    /* Status Colors - Dark Mode HSL */
+    --status-success: 142 71% 45%;
+    --status-warning: 38 92% 50%;
+    --status-error: 0 84% 60%;
+    --status-pending: 215 20% 65%;
+    --status-live: 238 84% 67%;
     
-    /* Tier Colors - Professional Dark Mode */
-    --tier-bronze: 251 146 60%;
-    --tier-silver: 39 39 42%;
-    --tier-gold: 251 191 36%;
-    --tier-platinum: 39 39 42%;
+    /* Tier Colors - Dark Mode HSL */
+    --tier-bronze: 30 80% 50%;
+    --tier-silver: 220 14% 60%;
+    --tier-gold: 45 93% 47%;
+    --tier-platinum: 210 40% 70%;
     
-    /* Sidebar Colors - Professional Dark Mode */
-    --sidebar-background: 30 30 31%;
-    --sidebar-foreground: 248 248 252%;
-    --sidebar-primary: 99 102 241%;
-    --sidebar-primary-foreground: 248 248 252%;
-    --sidebar-accent: 39 39 42%;
-    --sidebar-accent-foreground: 248 248 252%;
-    --sidebar-border: 39 39 42%;
-    --sidebar-ring: 99 102 241%;
+    /* Sidebar Colors - Dark Mode HSL */
+    --sidebar-background: 240 5% 11%;
+    --sidebar-foreground: 240 6% 97%;
+    --sidebar-primary: 238 84% 67%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 4% 18%;
+    --sidebar-accent-foreground: 240 6% 97%;
+    --sidebar-border: 240 4% 20%;
+    --sidebar-ring: 238 84% 67%;
   }
 }
 
@@ -107,7 +107,7 @@
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
-    font-family: 'Lexend Deca', system-ui, sans-serif;
+    font-family: 'Poppins', system-ui, sans-serif;
     transition: background-color 0.3s ease, color 0.3s ease;
   }
 
