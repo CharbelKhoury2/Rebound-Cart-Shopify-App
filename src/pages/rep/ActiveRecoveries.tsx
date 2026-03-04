@@ -50,216 +50,189 @@ export default function ActiveRecoveries() {
     }
   };
 
-  const markAsRecovered = (cartId: string) => {
-    // Mock function to mark cart as recovered
-    toast.success("Cart marked as recovered!");
-  };
-
   return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Active Recoveries</h1>
-          <p className="text-sm text-muted-foreground mt-1">Manage your claimed carts and track recovery progress</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <Badge variant="outline" className="text-sm">
-            {active.length} active
-          </Badge>
-          <Badge variant="outline" className="text-sm">
-            {recovered.length} recovered
-          </Badge>
-          <Badge variant="outline" className="text-sm">
-            {recoveryRate.toFixed(1)}% rate
-          </Badge>
+          <p className="text-muted-foreground">Manage and recover abandoned carts</p>
         </div>
       </div>
 
-      <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="active">Active Carts</TabsTrigger>
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card className="glass-card">
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <div className="p-2 bg-blue-500/10 rounded-lg">
+                <Target className="h-6 w-6 text-blue-500" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-muted-foreground">Active Carts</p>
+                <p className="text-2xl font-bold text-foreground">{active.length}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="glass-card">
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <div className="p-2 bg-green-500/10 rounded-lg">
+                <CheckCircle className="h-6 w-6 text-green-500" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-muted-foreground">Recovered</p>
+                <p className="text-2xl font-bold text-foreground">{recovered.length}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="glass-card">
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <div className="p-2 bg-purple-500/10 rounded-lg">
+                <TrendingUp className="h-6 w-6 text-purple-500" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-muted-foreground">Recovery Rate</p>
+                <p className="text-2xl font-bold text-foreground">{recoveryRate.toFixed(1)}%</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="glass-card">
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <div className="p-2 bg-orange-500/10 rounded-lg">
+                <Clock className="h-6 w-6 text-orange-500" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-muted-foreground">Avg Recovery Time</p>
+                <p className="text-2xl font-bold text-foreground">{avgRecoveryTime}m</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Performance Chart */}
+      <Card className="glass-card">
+        <CardHeader>
+          <CardTitle className="text-foreground">Weekly Performance</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={weeklyPerformance}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+              <XAxis dataKey="week" stroke="#9CA3AF" />
+              <YAxis stroke="#9CA3AF" />
+              <Tooltip 
+                contentStyle={{ backgroundColor: '#1F2937', border: '1px solid #374151' }}
+                labelStyle={{ color: '#F3F4F6' }}
+              />
+              <Line type="monotone" dataKey="claimed" stroke="#3B82F6" strokeWidth={2} />
+              <Line type="monotone" dataKey="recovered" stroke="#10B981" strokeWidth={2} />
+            </LineChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
+
+      <Tabs defaultValue="active" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="active">Active Carts ({active.length})</TabsTrigger>
+          <TabsTrigger value="recovered">Recovered ({recovered.length})</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
-          <TabsTrigger value="communication">Communication</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="overview" className="space-y-6">
-          {/* Performance Summary */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <Card className="glass-card">
-              <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold text-primary">{recoveryRate.toFixed(1)}%</div>
-                <p className="text-xs text-muted-foreground">Recovery Rate</p>
-              </CardContent>
-            </Card>
-            
-            <Card className="glass-card">
-              <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold text-status-success">${totalValueRecovered.toLocaleString()}</div>
-                <p className="text-xs text-muted-foreground">Total Recovered</p>
-              </CardContent>
-            </Card>
-            
-            <Card className="glass-card">
-              <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold text-status-warning">{avgRecoveryTime}m</div>
-                <p className="text-xs text-muted-foreground">Avg Recovery Time</p>
-              </CardContent>
-            </Card>
-            
-            <Card className="glass-card">
-              <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold text-foreground">${totalActiveValue.toLocaleString()}</div>
-                <p className="text-xs text-muted-foreground">Active Value</p>
-              </CardContent>
-            </Card>
+        <TabsContent value="active" className="space-y-6">
+          <div className="grid gap-4">
+            {active.map((cart) => (
+              <Card key={cart.id} className="glass-card">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-4">
+                      <StatusDot status={cart.status === "ABANDONED" ? "live" : "recovered"} />
+                      <div>
+                        <h3 className="font-semibold text-foreground">{cart.shopName}</h3>
+                        <p className="text-sm text-muted-foreground">{cart.customerEmail}</p>
+                        <p className="text-sm font-medium text-foreground">${cart.totalPrice.toFixed(2)}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => copyLink(cart.checkoutUrl)}
+                      >
+                        <Copy className="h-4 w-4 mr-2" />
+                        Copy Link
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => window.open(cart.checkoutUrl, '_blank')}
+                      >
+                        <ExternalLink className="h-4 w-4 mr-2" />
+                        Open
+                      </Button>
+                      <Button
+                        variant="default"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedCart(cart);
+                          setShowCommunication(true);
+                        }}
+                      >
+                        <MessageSquare className="h-4 w-4 mr-2" />
+                        Contact
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
-
-          {/* Weekly Performance Chart */}
-          <Card className="glass-card">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5" />
-                Weekly Performance
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={250}>
-                <LineChart data={weeklyPerformance}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="week" />
-                  <YAxis />
-                  <Tooltip />
-                  <Line type="monotone" dataKey="claimed" stroke="#3b82f6" strokeWidth={2} />
-                  <Line type="monotone" dataKey="recovered" stroke="#10b981" strokeWidth={2} />
-                </LineChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-
-          {/* Communication Success Rates */}
-          <Card className="glass-card">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <BarChart3 className="h-5 w-5" />
-                Communication Success Rates
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={200}>
-                <BarChart data={communicationStats}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="type" />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="success" fill="#10b981" />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
         </TabsContent>
 
-        <TabsContent value="active" className="space-y-6">
-          <div>
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-2">
-              <StatusDot status="live" /> In Progress ({active.length})
-            </h2>
-            <div className="grid gap-4">
-              {active.map((c) => (
-                <Card key={c.id} className="glass-card">
-                  <CardContent className="p-5">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <p className="font-semibold text-foreground">{c.shopName}</p>
-                          <CartScoring
-                            cartValue={c.totalPrice}
-                            abandonmentTime={Math.floor((Date.now() - new Date(c.createdAt).getTime()) / (1000 * 60))}
-                            itemCount={c.lineItems.length}
-                            storeConversionRate={0.25}
-                            competitorCount={Math.floor(Math.random() * 5)}
-                            avgOrderValue={250}
-                            size="compact"
-                          />
-                        </div>
-                        <p className="text-sm text-muted-foreground">{c.customerEmail}</p>
-                        <p className="text-lg font-bold text-foreground mt-2">${c.totalPrice.toFixed(2)}</p>
-                        <div className="mt-2 flex flex-wrap gap-1.5">
-                          {c.lineItems.map((item, j) => (
-                            <span key={j} className="text-xs text-muted-foreground bg-muted/50 px-2 py-1 rounded">
-                              {item.title} × {item.quantity}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="flex flex-col gap-2 shrink-0">
-                        <button
-                          onClick={() => copyLink(c.checkoutUrl)}
-                          className="flex items-center gap-2 rounded-md bg-secondary px-3 py-2 text-sm font-medium text-secondary-foreground hover:bg-accent transition-colors"
-                        >
-                          <Copy className="h-3.5 w-3.5" /> Copy Link
-                        </button>
-                        <button
-                          onClick={() => {
-                            setSelectedCart(c);
-                            setShowCommunication(true);
-                          }}
-                          className="flex items-center gap-2 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
-                        >
-                          <MessageSquare className="h-3.5 w-3.5" /> Contact
-                        </button>
-                        <button
-                          onClick={() => markAsRecovered(c.id)}
-                          className="flex items-center gap-2 rounded-md bg-status-success px-3 py-2 text-sm font-medium text-status-success-foreground hover:bg-status-success/90 transition-colors"
-                        >
-                          <CheckCircle className="h-3.5 w-3.5" /> Mark Recovered
-                        </button>
-                        <a
-                          href={c.checkoutUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-2 rounded-md bg-secondary px-3 py-2 text-sm font-medium text-secondary-foreground hover:bg-accent transition-colors"
-                        >
-                          <ExternalLink className="h-3.5 w-3.5" /> View Store
-                        </a>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-
-          {/* Recovered Carts */}
-          <div>
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-2">
-              <CheckCircle className="h-4 w-4 text-status-success" /> Recently Recovered ({recovered.length})
-            </h2>
-            <div className="grid gap-3">
-              {recovered.slice(0, 5).map((c) => (
-                <Card key={c.id} className="glass-card opacity-75">
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
+        <TabsContent value="recovered" className="space-y-6">
+          <div className="grid gap-4">
+            {recovered.map((cart) => (
+              <Card key={cart.id} className="glass-card">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-4">
+                      <StatusDot status={cart.status === "ABANDONED" ? "live" : "recovered"} />
                       <div>
-                        <p className="font-medium text-foreground">{c.shopName}</p>
-                        <p className="text-sm text-muted-foreground">{c.customerEmail}</p>
-                        <p className="font-semibold text-foreground mt-1">${c.totalPrice.toFixed(2)}</p>
-                      </div>
-                      <div className="text-right">
-                        <Badge variant="outline" className="text-status-success border-status-success">
-                          Recovered
-                        </Badge>
+                        <h3 className="font-semibold text-foreground">{cart.shopName}</h3>
+                        <p className="text-sm text-muted-foreground">{cart.customerEmail}</p>
+                        <p className="text-sm font-medium text-foreground">${cart.totalPrice.toFixed(2)}</p>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                    <div className="flex items-center space-x-2">
+                      <Badge variant="secondary" className="bg-green-500/10 text-green-500 border-green-500/20">
+                        Recovered
+                      </Badge>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </TabsContent>
 
         <TabsContent value="analytics" className="space-y-6">
-          <CommunicationAnalytics templates={[]} />
+          <Card className="glass-card">
+            <CardContent className="p-8 text-center">
+              <BarChart3 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-foreground mb-2">Analytics Coming Soon</h3>
+              <p className="text-sm text-muted-foreground">
+                Advanced analytics and reporting features will be available soon.
+              </p>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="communication" className="space-y-6">
@@ -297,5 +270,4 @@ export default function ActiveRecoveries() {
       </Tabs>
     </div>
   );
-                  }
 }
