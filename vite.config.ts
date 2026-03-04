@@ -32,7 +32,8 @@ export default defineConfig(({ mode }) => ({
         VITE_API_KEY: process.env.VITE_API_KEY || '',
         VITE_WS_URL: process.env.VITE_WS_URL || '',
         VITE_DASHBOARD_URL: process.env.VITE_DASHBOARD_URL || '',
-        VITE_NODE_ENV: process.env.VITE_NODE_ENV || 'development'
+        VITE_NODE_ENV: process.env.VITE_NODE_ENV || 'development',
+        VITE_API_URL: process.env.VITE_API_URL || 'http://localhost:3001/api'
       }
     },
   },
